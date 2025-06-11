@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>掛機釣魚遊戲</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="main-layout">
+        <!-- 左邊動畫畫面 -->
+        <div class="left-panel">
+            <div id="fishing-animation">
+                <img id="fishing-img" src="images/user/fishing1.png" alt="釣魚動畫" width="150">
+            </div>
+        </div>
+
+        <!-- 右邊：背包 + 釣魚紀錄 -->
+        <div class="right-panel">
+            <!-- 🎒 背包 -->
+            <div class="backpack-container">
+                <div class="section-title">🎒 釣魚背包</div>
+                <div id="inventory">(目前背包是空的)</div>
+                <button onclick="clearBackpack()">🗑️ 清空背包</button>
+            </div>
+
+            <!-- 📜 釣魚紀錄 -->
+            <div class="log-container">
+                <div class="section-title">📜 釣魚紀錄</div>
+                <div id="log">(還沒有紀錄)</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+
+
+</html>
