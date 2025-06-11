@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <title>掛機釣魚遊戲</title>
     <link rel="stylesheet" href="index.css">
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4db8ff" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 
 <body>
@@ -20,9 +24,18 @@
         <div class="right-panel">
             <!-- 🎒 背包 -->
             <div class="backpack-container">
-                <div class="section-title">🎒 釣魚背包</div>
+                <div class="between-title">
+                    <div class="section-title">🎒 釣魚背包</div>
+                    <div class="flex-list">
+                        <h6 class="common">普通</h6>
+                        <h6 class="rare">魔法</h6>
+                        <h6 class="epic">稀有</h6>
+                        <h6 class="legend">史詩</h6>
+                        <h6 class="mythic">神話</h6>
+                    </div>
+                </div>
                 <div id="inventory">(目前背包是空的)</div>
-                <button onclick="clearBackpack()">🗑️ 清空背包</button>
+
             </div>
 
             <!-- 📜 釣魚紀錄 -->
