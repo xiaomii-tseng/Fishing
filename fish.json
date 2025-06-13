@@ -1,12 +1,12 @@
 [
     {
         "name": "金魚",
-        "probability": 20,
+        "probability": 50,
         "image": "images/fish/fish1.png"
     },
     {
         "name": "鯉魚",
-        "probability": 20,
+        "probability": 50,
         "image": "images/fish/fish3.png"
     },
     {
@@ -66,7 +66,7 @@
     },
     {
         "name": "吳郭魚",
-        "probability": 20,
+        "probability": 50,
         "image": "images/fish/fish14.png"
     },
     {

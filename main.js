@@ -192,7 +192,22 @@ function updateBackpackUI() {
   const grid = document.createElement("div");
   grid.className = "fish-grid";
 
-  for (const [fishName, count] of Object.entries(backpack)) {
+  // ✨ 將 Object.entries(backpack) 轉成陣列，並依據 currentSort 排序
+  let entries = Object.entries(backpack);
+
+  if (currentSort) {
+    entries.sort((a, b) => {
+      const fishA = fishTypes.find((f) => f.name === a[0]);
+      const fishB = fishTypes.find((f) => f.name === b[0]);
+      const probA = fishA?.probability || 0;
+      const probB = fishB?.probability || 0;
+
+      return currentSort === "asc" ? probA - probB : probB - probA;
+    });
+  }
+
+  // 🔁 根據排序後的資料建立卡片
+  for (const [fishName, count] of entries) {
     const fish = fishTypes.find((f) => f.name === fishName);
     if (!fish) continue;
 
@@ -343,6 +358,13 @@ function updateMoneyUI() {
   const el = document.getElementById("coinCount");
   if (el) el.textContent = money.toLocaleString();
 }
+
+// 排序
+let currentSort = "desc";
+document.getElementById("sortSelect").addEventListener("change", (e) => {
+  currentSort = e.target.value;
+  updateBackpackUI(); // 更新背包畫面
+});
 
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
