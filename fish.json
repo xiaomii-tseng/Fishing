@@ -16,7 +16,7 @@
     },
     {
         "name": "鮪魚",
-        "probability": 1,
+        "probability": 0.7,
         "image": "images/fish/fish4.png"
     },
     {

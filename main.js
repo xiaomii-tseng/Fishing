@@ -112,6 +112,27 @@ function startAutoFishing() {
   loop();
 }
 
+// 手動釣魚增加稀有度
+function getWeightedFishByPrecision(precisionRatio) {
+  // 建立一個新的魚池，加權機率會隨 precisionRatio 提升而往稀有魚偏移
+  const weightedFish = fishTypes.map((fish) => {
+    const rarityWeight = 1 / fish.probability; // 機率越低，值越高
+    const bias = 1 + rarityWeight * precisionRatio * 0.1; // 可調係數 0.1
+    return {
+      ...fish,
+      weight: fish.probability * bias,
+    };
+  });
+
+  const total = weightedFish.reduce((sum, f) => sum + f.weight, 0);
+  const rand = Math.random() * total;
+  let sum = 0;
+  for (const f of weightedFish) {
+    sum += f.weight;
+    if (rand < sum) return f;
+  }
+}
+
 function stopAutoFishing() {
   clearTimeout(autoFishingInterval);
   autoFishingInterval = null;
@@ -238,20 +259,24 @@ function stopPrecisionBar() {
   if (!precisionInterval) return;
   clearInterval(precisionInterval);
   precisionInterval = null;
+
   const track = document.getElementById("precisionTrack");
   const indicator = document.getElementById("precisionIndicator");
   const trackWidth = track.clientWidth;
   const indicatorWidth = indicator.clientWidth;
   const precisionRatio = pos / (trackWidth - indicatorWidth);
+
   const successChance = 60 + precisionRatio * 38;
   const isSuccess = Math.random() * 100 < successChance;
+
   if (isSuccess) {
-    const fish = getRandomFish();
+    const fish = getWeightedFishByPrecision(precisionRatio); // ✅ 改這行
     addFishToBackpack(fish.name);
-    logCatch(`釣到了：${fish.name}!`);
+    logCatch(`成功釣到：${fish.name}`);
   } else {
     logCatch("魚跑掉了...");
   }
+
   document.getElementById("precisionBarContainer").style.display = "none";
   if (!isAutoMode) scheduleManualFishing();
 }
