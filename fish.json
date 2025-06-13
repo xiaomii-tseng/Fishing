@@ -21,7 +21,7 @@
     },
     {
         "name": "神仙魚",
-        "probability": 7,
+        "probability": 50,
         "image": "images/fish/fish5.png"
     },
     {
@@ -56,7 +56,7 @@
     },
     {
         "name": "深海燈籠魚",
-        "probability": 0.08,
+        "probability": 0.06,
         "image": "images/fish/fish12.png"
     },
     {
@@ -71,7 +71,7 @@
     },
     {
         "name": "海螺",
-        "probability": 4.5,
+        "probability": 50,
         "image": "images/fish/fish15.png"
     },
     {

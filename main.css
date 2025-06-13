@@ -349,9 +349,41 @@ body {
   width: 80vw;
 }
 
+/* 排序選單 */
 #sortSelect {
   border: 4px solid #3e2e1c;
   border-radius: 15px;
   background-color: #6d563f;
   color: #eeeeee;
+}
+
+/* 魚的卡片邊框 */
+.rarity-common {
+  border: 2px solid #ccc;
+}
+.rarity-uncommon {
+  border: 2px solid #4da6ff; /* 藍 */
+}
+.rarity-rare {
+  border: 2px solid #ffe066; /* 黃 */
+}
+.rarity-epic {
+  border: 2px solid #c17aff; /* 紫 */
+}
+.rarity-mythic {
+  border: 2px solid #ff4d4d; /* 紅 */
+}
+.rarity-legend {
+  border: 2px solid;
+  border-image: linear-gradient(
+      45deg,
+      red,
+      orange,
+      yellow,
+      green,
+      blue,
+      indigo,
+      violet
+    )
+    1;
 }

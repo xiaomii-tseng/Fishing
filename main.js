@@ -28,6 +28,16 @@ function normalizeFishProbabilities(fishList) {
   }));
 }
 
+// 魚的卡片邊框
+function getRarityClass(probability) {
+  if (probability > 5) return "rarity-common"; // 普通：白色
+  if (probability > 0.5) return "rarity-uncommon"; // 高級：藍色
+  if (probability > 0.2) return "rarity-rare"; // 稀有：黃色
+  if (probability > 0.1) return "rarity-epic"; // 史詩：紫色
+  if (probability > 0.05) return "rarity-mythic"; // 神話：紅色
+  return "rarity-legend"; // 傳奇：彩色邊框
+}
+
 // 計算魚的價值
 function assignPriceByProbability(fishList, baseValue = 100) {
   return fishList.map((fish) => {
@@ -192,27 +202,28 @@ function updateBackpackUI() {
   const grid = document.createElement("div");
   grid.className = "fish-grid";
 
-  // ✨ 將 Object.entries(backpack) 轉成陣列，並依據 currentSort 排序
+  // ✨ 排序處理
   let entries = Object.entries(backpack);
-
   if (currentSort) {
     entries.sort((a, b) => {
       const fishA = fishTypes.find((f) => f.name === a[0]);
       const fishB = fishTypes.find((f) => f.name === b[0]);
       const probA = fishA?.probability || 0;
       const probB = fishB?.probability || 0;
-
       return currentSort === "asc" ? probA - probB : probB - probA;
     });
   }
 
-  // 🔁 根據排序後的資料建立卡片
+  // 🔁 建立卡片
   for (const [fishName, count] of entries) {
     const fish = fishTypes.find((f) => f.name === fishName);
     if (!fish) continue;
 
     const card = document.createElement("div");
     card.className = "fish-card";
+    const rarityClass = getRarityClass(fish.probability); // ✅ 等有 fish 之後再呼叫
+    card.classList.add(rarityClass);
+
     card.innerHTML = `
       <img src="${fish.image}" class="fish-icon" alt="${fish.name}">
       <div class="fish-info">
