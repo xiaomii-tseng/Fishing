@@ -10,6 +10,21 @@
         "image": "images/fish/fish3.png"
     },
     {
+        "name": "神仙魚",
+        "probability": 50,
+        "image": "images/fish/fish5.png"
+    },
+    {
+        "name": "吳郭魚",
+        "probability": 50,
+        "image": "images/fish/fish14.png"
+    },
+    {
+        "name": "海螺",
+        "probability": 50,
+        "image": "images/fish/fish15.png"
+    },
+    {
         "name": "鯊魚",
         "probability": 0.7,
         "image": "images/fish/fish2.png"
@@ -18,11 +33,6 @@
         "name": "鮪魚",
         "probability": 0.15,
         "image": "images/fish/fish4.png"
-    },
-    {
-        "name": "神仙魚",
-        "probability": 50,
-        "image": "images/fish/fish5.png"
     },
     {
         "name": "海鰻",
@@ -65,18 +75,8 @@
         "image": "images/fish/fish13.png"
     },
     {
-        "name": "吳郭魚",
-        "probability": 50,
-        "image": "images/fish/fish14.png"
-    },
-    {
-        "name": "海螺",
-        "probability": 50,
-        "image": "images/fish/fish15.png"
-    },
-    {
         "name": "魷魚",
-        "probability": 1.5,
+        "probability": 1.4,
         "image": "images/fish/fish16.png"
     },
     {
@@ -103,5 +103,30 @@
         "name": "飛魚",
         "probability": 2.3,
         "image": "images/fish/fish21.png"
+    },
+    {
+        "name": "深海鯊",
+        "probability": 0.27,
+        "image": "images/fish/fish22.png"
+    },
+    {
+        "name": "鯨魚",
+        "probability": 0.085,
+        "image": "images/fish/fish23.png"
+    },
+    {
+        "name": "巨骨舌魚",
+        "probability": 0.15,
+        "image": "images/fish/fish24.png"
+    },
+    {
+        "name": "水母",
+        "probability": 0.41,
+        "image": "images/fish/fish25.png"
+    },
+    {
+        "name": "魟魚",
+        "probability": 0.32,
+        "image": "images/fish/fish26.png"
     }
 ]
