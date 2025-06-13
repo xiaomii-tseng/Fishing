@@ -311,3 +311,43 @@ body {
     transform: scale(1);
   }
 }
+
+/* 販賣框 */
+.sell-modal {
+  border: 4px solid #6b4f30;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.803);
+  color: #fff;
+}
+
+.sell-modal .modal-header {
+  border-bottom: 2px solid #8b6b4a;
+  background-color: #cba27a;
+}
+
+.sell-modal .modal-body {
+  background-color: #8b6b4a;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.sell-modal .modal-footer {
+  border-top: 2px solid #8b6b4a;
+  background-color: #cba27a;
+}
+
+#sellTotal {
+  font-size: 1.2rem;
+  color: gold;
+  font-weight: bold;
+}
+.sell-btn {
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 10px 15px 10px 15px;
+  border-radius: 15px;
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 0px rgb(4, 49, 60);
+  border: 2px solid #4c2c00;
+}

@@ -208,6 +208,7 @@ function updateBackpackUI() {
         <div class="fish-value">💰：${fish.price} G</div>
       </div>
     `;
+    card.addEventListener("click", () => openSellModal(fish, count));
     grid.appendChild(card);
   }
 
@@ -284,6 +285,63 @@ function stopPrecisionBar() {
 document
   .getElementById("precisionStopBtn")
   .addEventListener("click", stopPrecisionBar);
+
+// 🛒 賣魚對話框
+let money = loadMoney();
+function openSellModal(fish, count) {
+  const input = document.getElementById("sellQuantity");
+  const label = document.getElementById("sellFishName");
+  const total = document.getElementById("sellTotal");
+  const confirmBtn = document.getElementById("confirmSell");
+
+  // 初始化對話框內容
+  input.max = count;
+  input.value = 1;
+  label.textContent = `販售：${fish.name}`;
+  total.textContent = `${fish.price} G`;
+
+  // 當使用者改變數量時重新計算總價
+  input.oninput = () => {
+    const qty = Math.min(input.valueAsNumber || 1, count);
+    total.textContent = `${qty * fish.price} G`;
+  };
+
+  // 點擊「確定販售」按鈕時執行販售邏輯
+  confirmBtn.onclick = () => {
+    const qty = Math.min(input.valueAsNumber || 1, count);
+    if (qty <= 0) return;
+
+    // 扣除背包中的數量
+    backpack[fish.name] -= qty;
+    if (backpack[fish.name] <= 0) delete backpack[fish.name];
+
+    // 增加金幣
+    money += qty * fish.price;
+
+    // 儲存並更新畫面
+    saveBackpack();
+    saveMoney();
+    updateBackpackUI();
+    updateMoneyUI();
+
+    // 關閉對話框
+    bootstrap.Modal.getInstance(document.getElementById("sellModal")).hide();
+  };
+
+  // 開啟對話框
+  const modal = new bootstrap.Modal(document.getElementById("sellModal"));
+  modal.show();
+}
+function saveMoney() {
+  localStorage.setItem("fishing-money", money);
+}
+function loadMoney() {
+  return parseInt(localStorage.getItem("fishing-money") || "0", 10);
+}
+function updateMoneyUI() {
+  const el = document.getElementById("coinCount");
+  if (el) el.textContent = money.toLocaleString();
+}
 
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
