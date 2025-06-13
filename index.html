@@ -41,7 +41,8 @@
         <div class="mode-toggle">
             <button id="toggleModeBtn" class="mode-btn fnc-anm">自動模式</button>
         </div>
-
+        <!-- 釣魚中 -->
+        <div id="fishingStatus" class="fishing-status">自動釣魚中...</div>
         <!-- 釣魚訊息 -->
         <div id="bottomInfo" class="bottom-info"></div>
 
@@ -52,15 +53,25 @@
                 <div>裝備</div>
             </button>
 
-            <button class="fnc-btn" id="openBackpack">
+            <button class="fnc-btn fnc-anm" id="openBackpack">
                 <img src="images/icons/backpack.png" alt="背包" class="icon" />
                 <div>背包</div>
             </button>
 
-            <button class="fnc-btn" id="openShop">
+            <button class="fnc-btn fnc-anm" id="openShop">
                 <img src="images/icons/shop.png" alt="商店" class="icon" />
                 <div>商店</div>
             </button>
+        </div>
+
+        <!-- 手動釣魚精度條 UI：初始隱藏在畫面中央 -->
+        <div id="precisionBarContainer" class="precision-bar-container" style="display: none;">
+            <!-- 精度條槽 -->
+            <div id="precisionTrack" class="precision-track">
+                <div id="precisionIndicator" class="precision-indicator"></div>
+            </div>
+            <!-- 停止按鈕 -->
+            <button id="precisionStopBtn" class="precision-stop-btn heartbeat">停止</button>
         </div>
     </div>
 

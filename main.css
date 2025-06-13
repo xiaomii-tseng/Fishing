@@ -206,3 +206,108 @@ body {
   opacity: 1;
   transform: translateY(-10px);
 }
+
+/* 精度條容器：畫面中央顯示 */
+.precision-bar-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* 可選：使容器稍微半透明遮罩背景，提升可見度 */
+  /* background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; */
+  z-index: 1000; /* 確保蓋在其他元素之上 */
+}
+
+/* 精度條槽背景 */
+.precision-track {
+  position: relative;
+  width: 300px;
+  height: 50px;
+  /* 從紅到綠的漸層，表示成功率從低到高 */
+  background: linear-gradient(to right, #ff5050, #50ff50);
+  border: 3px solid #4c2c00;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  box-shadow: 2px 2px 20px rgb(4, 49, 60);
+}
+
+/* 指示器 */
+.precision-indicator {
+  position: absolute;
+  top: -4px; /* 讓指示器稍微高出槽，以清楚可見 */
+  left: 0;
+  width: 6px;
+  height: 55px;
+  border: 1px solid #ffffff;
+  background: #321d00;
+  border-radius: 4px;
+}
+
+/* 停止按鈕（可依需求客製化或套用現有樣式） */
+.precision-stop-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  /* 可選：自訂按鈕外觀以符合遊戲風格 */
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 20px rgb(4, 49, 60);
+  border-radius: 15px;
+  border: 2px solid #4c2c00;
+}
+
+/* 停止按鈕動畫 */
+.heartbeat {
+  animation: heartbeat 1s infinite ease-in-out;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.15);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+}
+
+/* 釣魚中文字 + 動畫 */
+.fishing-status {
+  position: absolute;
+  top: 100px;
+  left: 30%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  animation: pulseText 3s ease-in-out infinite;
+  z-index: 1000;
+  text-shadow: 2px 2px 0px #000000;
+  pointer-events: none;
+}
+
+@keyframes pulseText {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+}

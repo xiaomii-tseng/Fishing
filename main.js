@@ -5,6 +5,7 @@ let fishTypes = [];
 const STORAGE_KEY = "fishing-backpack";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
+let manualFishingTimeout = null;
 let isAutoMode = true;
 
 // 🎣 讀取 fish.json 並開始自動釣魚
@@ -13,7 +14,7 @@ fetch("fish.json")
   .then((data) => {
     fishTypes = assignPriceByProbability(normalizeFishProbabilities(data));
     updateBackpackUI();
-    startAutoFishing();
+    if (isAutoMode) startAutoFishing();
   })
   .catch((err) => console.error("❌ 載入魚資料失敗", err));
 
@@ -22,14 +23,14 @@ function normalizeFishProbabilities(fishList) {
   const total = fishList.reduce((sum, f) => sum + f.probability, 0);
   return fishList.map((fish) => ({
     ...fish,
-    probability: parseFloat(((fish.probability / total) * 100).toFixed(4)), // 先保留較高精度
+    probability: parseFloat(((fish.probability / total) * 100).toFixed(4)),
   }));
 }
 
 // 計算魚的價值
 function assignPriceByProbability(fishList, baseValue = 100) {
   return fishList.map((fish) => {
-    const price = Math.floor(baseValue / (fish.probability / 5)); // 因為你正規化後是百分比
+    const price = Math.floor(baseValue / (fish.probability / 5));
     return {
       ...fish,
       price,
@@ -48,11 +49,28 @@ if (openBackpackBtn) {
 
 // 🔁 模式切換邏輯
 const toggleBtn = document.getElementById("toggleModeBtn");
+const fishingStatus = document.getElementById("fishingStatus");
+// 初始化狀態
+if (fishingStatus) {
+  fishingStatus.textContent = isAutoMode ? "自動釣魚中..." : "手動釣魚中...";
+}
 if (toggleBtn) {
   toggleBtn.addEventListener("click", () => {
     isAutoMode = !isAutoMode;
     toggleBtn.textContent = isAutoMode ? "自動模式" : "手動模式";
-    isAutoMode ? startAutoFishing() : stopAutoFishing();
+    // 🐟 更新狀態提示文字
+    if (fishingStatus) {
+      fishingStatus.textContent = isAutoMode
+        ? "自動釣魚中..."
+        : "手動釣魚中...";
+    }
+    stopAutoFishing();
+    clearTimeout(manualFishingTimeout);
+    if (isAutoMode) {
+      startAutoFishing();
+    } else {
+      scheduleManualFishing();
+    }
   });
 }
 
@@ -77,7 +95,7 @@ function startAutoFishing() {
   if (autoFishingInterval) return;
 
   const loop = () => {
-    const delay = Math.random() * (3000 - 2000) + 5000;
+    const delay = Math.random() * (30000 - 15000) + 15000;
     autoFishingInterval = setTimeout(() => {
       const success = Math.random() < 0.5;
       if (success) {
@@ -97,6 +115,13 @@ function startAutoFishing() {
 function stopAutoFishing() {
   clearTimeout(autoFishingInterval);
   autoFishingInterval = null;
+}
+
+function scheduleManualFishing() {
+  const delay = Math.random() * (12000 - 5000) + 5000;
+  manualFishingTimeout = setTimeout(() => {
+    startPrecisionBar();
+  }, delay);
 }
 
 // 🎯 機率抽魚
@@ -170,37 +195,70 @@ function updateBackpackUI() {
 
 // 釣魚資訊
 function logCatch(message) {
-  // 顯示在畫面底部浮出
   const bottomInfo = document.getElementById("bottomInfo");
   if (bottomInfo) {
     bottomInfo.textContent = message;
     bottomInfo.classList.add("show");
-
-    // 過 5 秒淡出
     setTimeout(() => {
       bottomInfo.classList.remove("show");
     }, 5000);
   }
 }
 
-// 每次抓圖時，先看看快取有沒有，沒有就抓並加進快取
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const response = await cache.match(event.request);
-      if (response) return response;
+// 🎯 精度條控制
+let precisionInterval = null;
+let pos = 0;
+let direction = 1;
+const speed = 5;
+const intervalTime = 16;
 
-      const fetched = await fetch(event.request);
-      if (
-        event.request.url.startsWith(self.location.origin) &&
-        event.request.destination === "image"
-      ) {
-        cache.put(event.request, fetched.clone());
-      }
-      return fetched;
-    })
-  );
-});
+function startPrecisionBar() {
+  if (precisionInterval) return;
+  pos = 0;
+  direction = 1;
+  document.getElementById("precisionBarContainer").style.display = "flex";
+  const track = document.getElementById("precisionTrack");
+  const indicator = document.getElementById("precisionIndicator");
+  const trackWidth = track.clientWidth;
+  const indicatorWidth = indicator.clientWidth;
+  precisionInterval = setInterval(() => {
+    pos += speed * direction;
+    if (pos >= trackWidth - indicatorWidth) {
+      pos = trackWidth - indicatorWidth;
+      direction = -1;
+    } else if (pos <= 0) {
+      pos = 0;
+      direction = 1;
+    }
+    indicator.style.left = pos + "px";
+  }, intervalTime);
+}
+
+function stopPrecisionBar() {
+  if (!precisionInterval) return;
+  clearInterval(precisionInterval);
+  precisionInterval = null;
+  const track = document.getElementById("precisionTrack");
+  const indicator = document.getElementById("precisionIndicator");
+  const trackWidth = track.clientWidth;
+  const indicatorWidth = indicator.clientWidth;
+  const precisionRatio = pos / (trackWidth - indicatorWidth);
+  const successChance = 60 + precisionRatio * 38;
+  const isSuccess = Math.random() * 100 < successChance;
+  if (isSuccess) {
+    const fish = getRandomFish();
+    addFishToBackpack(fish.name);
+    logCatch(`釣到了：${fish.name}!`);
+  } else {
+    logCatch("魚跑掉了...");
+  }
+  document.getElementById("precisionBarContainer").style.display = "none";
+  if (!isAutoMode) scheduleManualFishing();
+}
+
+document
+  .getElementById("precisionStopBtn")
+  .addEventListener("click", stopPrecisionBar);
 
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
