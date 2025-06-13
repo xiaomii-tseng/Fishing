@@ -2,17 +2,11 @@ const CACHE_NAME = "fishing-pwa-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
-  "/main.js", // 你的 JS 檔名
-  "/main.css", // 你的 CSS 檔名
-  "/images/index/index1.jpg",
-  "/images/index/backpackbg.jpg",
-  "/images/icons/coin.png",
-  "/images/icons/equip.png",
-  "/images/icons/backpack.png",
-  "/images/icons/shop.png",
-  // 魚
-  "/images/fishes/fish1.png",
-  "/images/fishes/fish2.png",
+  "/main.js",
+  "/main.css",
+  "/manifest.json",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
 ];
 
 self.addEventListener("install", (event) => {

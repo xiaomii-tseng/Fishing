@@ -1,0 +1,27 @@
+[
+    {
+        "name": "金魚",
+        "probability": 15,
+        "image": "images/fish/fish1.png"
+    },
+    {
+        "name": "鯉魚",
+        "probability": 15,
+        "image": "images/fish/fish3.png"
+    },
+    {
+        "name": "鯊魚",
+        "probability": 1,
+        "image": "images/fish/fish2.png"
+    },
+    {
+        "name": "鮪魚",
+        "probability": 1,
+        "image": "images/fish/fish4.png"
+    },
+    {
+        "name": "神仙魚",
+        "probability": 7,
+        "image": "images/fish/fish5.png"
+    }
+]
