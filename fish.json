@@ -1,27 +1,97 @@
 [
     {
         "name": "金魚",
-        "probability": 15,
+        "probability": 20,
         "image": "images/fish/fish1.png"
     },
     {
         "name": "鯉魚",
-        "probability": 15,
+        "probability": 20,
         "image": "images/fish/fish3.png"
     },
     {
         "name": "鯊魚",
-        "probability": 1,
+        "probability": 0.7,
         "image": "images/fish/fish2.png"
     },
     {
         "name": "鮪魚",
-        "probability": 0.7,
+        "probability": 0.5,
         "image": "images/fish/fish4.png"
     },
     {
         "name": "神仙魚",
         "probability": 7,
         "image": "images/fish/fish5.png"
+    },
+    {
+        "name": "海鰻",
+        "probability": 2,
+        "image": "images/fish/fish6.png"
+    },
+    {
+        "name": "河豚",
+        "probability": 4,
+        "image": "images/fish/fish7.png"
+    },
+    {
+        "name": "螃蟹",
+        "probability": 3.5,
+        "image": "images/fish/fish8.png"
+    },
+    {
+        "name": "帝王蟹",
+        "probability": 0.6,
+        "image": "images/fish/fish9.png"
+    },
+    {
+        "name": "紅蝦子",
+        "probability": 3,
+        "image": "images/fish/fish10.png"
+    },
+    {
+        "name": "龍蝦",
+        "probability": 0.55,
+        "image": "images/fish/fish11.png"
+    },
+    {
+        "name": "深海燈籠魚",
+        "probability": 0.08,
+        "image": "images/fish/fish12.png"
+    },
+    {
+        "name": "開過的魚罐頭",
+        "probability": 0.8,
+        "image": "images/fish/fish13.png"
+    },
+    {
+        "name": "吳郭魚",
+        "probability": 20,
+        "image": "images/fish/fish14.png"
+    },
+    {
+        "name": "海螺",
+        "probability": 4.5,
+        "image": "images/fish/fish15.png"
+    },
+    {
+        "name": "魷魚",
+        "probability": 1.5,
+        "image": "images/fish/fish16.png"
+    },
+    {
+        "name": "章魚",
+        "probability": 1.5,
+        "image": "images/fish/fish17.png"
+    },
+    {
+        "name": "海馬王",
+        "probability": 0.1,
+        "image": "images/fish/fish18.png"
+    },
+    {
+        "name": "海馬",
+        "probability": 1.2,
+        "image": "images/fish/fish19.png"
     }
 ]
