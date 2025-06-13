@@ -16,7 +16,7 @@
     },
     {
         "name": "鮪魚",
-        "probability": 0.5,
+        "probability": 0.15,
         "image": "images/fish/fish4.png"
     },
     {
@@ -86,12 +86,22 @@
     },
     {
         "name": "海馬王",
-        "probability": 0.1,
+        "probability": 0.2,
         "image": "images/fish/fish18.png"
     },
     {
         "name": "海馬",
         "probability": 1.2,
         "image": "images/fish/fish19.png"
+    },
+    {
+        "name": "機械鯉魚",
+        "probability": 0.17,
+        "image": "images/fish/fish20.png"
+    },
+    {
+        "name": "機械鯉魚",
+        "probability": 2.3,
+        "image": "images/fish/fish21.png"
     }
 ]

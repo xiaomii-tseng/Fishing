@@ -387,3 +387,8 @@ body {
     )
     1;
 }
+
+#maxSellBtn {
+  border: 1px solid white;
+  color: #fff;
+}

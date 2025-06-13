@@ -321,6 +321,15 @@ function openSellModal(fish, count) {
   const total = document.getElementById("sellTotal");
   const confirmBtn = document.getElementById("confirmSell");
 
+  // 最大值
+  const maxBtn = document.getElementById("maxSellBtn");
+  if (maxBtn) {
+    maxBtn.onclick = () => {
+      input.value = count;
+      total.textContent = `${count * fish.price} G`;
+    };
+  }
+
   // 初始化對話框內容
   input.max = count;
   input.value = 1;
