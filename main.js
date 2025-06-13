@@ -139,7 +139,7 @@ function stopAutoFishing() {
 }
 
 function scheduleManualFishing() {
-  const delay = Math.random() * (30000 - 15000) + 15000;
+  const delay = Math.random() * (12000 - 5000) + 5000;
   manualFishingTimeout = setTimeout(() => {
     startPrecisionBar();
   }, delay);
