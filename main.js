@@ -14,6 +14,7 @@ fetch("fish.json")
   .then((data) => {
     fishTypes = assignPriceByProbability(normalizeFishProbabilities(data));
     updateBackpackUI();
+    updateMoneyUI();
     if (isAutoMode) startAutoFishing();
   })
   .catch((err) => console.error("❌ 載入魚資料失敗", err));
