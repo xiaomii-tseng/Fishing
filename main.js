@@ -50,7 +50,7 @@ function getRarityClass(probability) {
 let precisionInterval = null;
 let pos = 0;
 let direction = 1;
-const speed = 5;
+const speed = 6;
 const intervalTime = 16;
 function startPrecisionBar() {
   if (precisionInterval) return;
@@ -74,17 +74,53 @@ function startPrecisionBar() {
   }, intervalTime);
 }
 // 釣魚資訊
+function logCatchCard(fishObj, fishType) {
+  const bottomInfo = document.getElementById("bottomInfo");
+  if (!bottomInfo) return;
+
+  bottomInfo.innerHTML = ""; // 清空
+  bottomInfo.className = "bottom-info show"; // 重設 class
+
+  if (fishType && fishObj) {
+    const card = document.createElement("div");
+    card.className = "fish-card";
+
+    // 🪄 加上稀有度 class
+    const rarityClass = getRarityClass(fishType.probability);
+    card.classList.add(rarityClass);
+
+    card.innerHTML = `
+      <img src="${fishType.image}" class="fish-icon" alt="${fishType.name}">
+      <div class="fish-info">
+        <div class="fish-name">${fishType.name}</div>
+        <div class="fish-size">尺寸：${fishObj.size.toFixed(1)} cm</div>
+        <div class="fish-value">💰：${fishType.price} G</div>
+      </div>
+    `;
+    bottomInfo.appendChild(card);
+  } else {
+    bottomInfo.textContent = "魚跑掉了...";
+  }
+
+  clearTimeout(bottomInfo._hideTimer);
+  bottomInfo._hideTimer = setTimeout(() => {
+    bottomInfo.classList.remove("show");
+  }, 5000);
+}
+
 function logCatch(message) {
   const bottomInfo = document.getElementById("bottomInfo");
   if (bottomInfo) {
     bottomInfo.textContent = message;
     bottomInfo.classList.add("show");
-    setTimeout(() => {
+
+    // 清除先前計時器（避免多次觸發）
+    clearTimeout(bottomInfo._hideTimer);
+    bottomInfo._hideTimer = setTimeout(() => {
       bottomInfo.classList.remove("show");
     }, 5000);
   }
 }
-
 document
   .getElementById("precisionStopBtn")
   .addEventListener("click", stopPrecisionBar);
@@ -141,22 +177,20 @@ function stopPrecisionBar() {
   const isSuccess = Math.random() * 100 < successChance;
 
   if (isSuccess) {
-    const fish = getWeightedFishByPrecision(precisionRatio);
-    addFishToBackpack(fish.name);
-    logCatch(`成功釣到：${fish.name}`);
+    const fishType = getWeightedFishByPrecision(precisionRatio);
+    addFishToBackpack(fishType);
   } else {
     logCatch("魚跑掉了...");
   }
 
   document.getElementById("precisionBarContainer").style.display = "none";
-  if (!isAutoMode) scheduleManualFishing();
+  if (!isAutoMode) {
+    manualFishingTimeout = setTimeout(() => {
+      startPrecisionBar();
+    }, 5500);
+  }
 }
-function scheduleManualFishing() {
-  const delay = Math.random() * (12000 - 5000) + 5000;
-  manualFishingTimeout = setTimeout(() => {
-    startPrecisionBar();
-  }, delay);
-}
+
 // 計算魚的價值
 function assignPriceByProbability(fishList, baseValue = 100) {
   return fishList.map((fish) => {
@@ -197,13 +231,20 @@ if (toggleBtn) {
     stopAutoFishing();
     clearTimeout(manualFishingTimeout);
     if (isAutoMode) {
+      hidePrecisionBar();
       startAutoFishing();
     } else {
-      scheduleManualFishing();
+      startPrecisionBar();
     }
   });
 }
-
+// 關閉精度條
+function hidePrecisionBar() {
+  clearInterval(precisionInterval);
+  precisionInterval = null;
+  const container = document.getElementById("precisionBarContainer");
+  if (container) container.style.display = "none";
+}
 // ✨ 點擊動畫效果
 function addClickBounce(el) {
   el.classList.add("click-bounce");
@@ -229,9 +270,8 @@ function startAutoFishing() {
     autoFishingInterval = setTimeout(() => {
       const success = Math.random() < 0.5;
       if (success) {
-        const fish = getRandomFish();
-        addFishToBackpack(fish.name);
-        logCatch(`釣到了：${fish.name}!`);
+        const fishType = getRandomFish();
+        addFishToBackpack(fishType);
       } else {
         logCatch("魚跑掉了...");
       }
@@ -279,21 +319,23 @@ function getRandomFish() {
   }
 }
 
-// 🧳 新增魚到背包並保存
-function addFishToBackpack(fishName) {
-  const fishData = fishTypes.find((f) => f.name === fishName);
-  if (!fishData) return;
-
-  const newFish = {
-    id: generateUUID(),
-    name: fishData.name,
-    size: parseFloat((Math.random() * 100).toFixed(1)), // 可調整區間
-    timestamp: new Date().toISOString(),
+// 打包卡片資訊
+function createFishInstance(fishType) {
+  return {
+    id: crypto.randomUUID(),
+    name: fishType.name,
+    size: parseFloat((Math.random() * 100).toFixed(1)),
+    caughtAt: new Date().toISOString(),
   };
+}
 
-  backpack.push(newFish);
+// 🧳 新增魚到背包並保存
+function addFishToBackpack(fishType) {
+  const fishObj = createFishInstance(fishType);
+  backpack.push(fishObj);
   saveBackpack();
   updateBackpackUI();
+  logCatchCard(fishObj, fishType); // 改這裡：顯示卡片
 }
 
 // 💾 LocalStorage 儲存 & 載入
@@ -366,7 +408,6 @@ document.getElementById("sortSelect").addEventListener("change", (e) => {
   currentSort = e.target.value;
   updateBackpackUI();
 });
-
 
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
