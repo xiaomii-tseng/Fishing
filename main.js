@@ -9,6 +9,9 @@ let manualFishingTimeout = null;
 let isAutoMode = true;
 let money = loadMoney();
 let currentSort = "asc";
+let longPressTimer = null;
+let isMultiSelectMode = false;
+const selectedFishIds = new Set();
 
 // 🎣 讀取 fish.json 並開始自動釣魚
 fetch("fish.json")
@@ -107,7 +110,72 @@ function logCatchCard(fishObj, fishType) {
     bottomInfo.classList.remove("show");
   }, 5000);
 }
+// 多選與單選的function
+function enterMultiSelectMode() {
+  isMultiSelectMode = true;
+  selectedFishIds.clear();
+  document.getElementById("batchSellBar").style.display = "flex";
+}
+function toggleFishSelection(id) {
+  if (selectedFishIds.has(id)) {
+    selectedFishIds.delete(id);
+  } else {
+    selectedFishIds.add(id);
+  }
+}
+function updateCardSelectionUI() {
+  document.querySelectorAll(".fish-card").forEach((card) => {
+    const id = card.dataset.id;
+    card.classList.toggle("selected", selectedFishIds.has(id));
+  });
+}
+// 多選與單選
+function handleFishCardEvents(cardEl, fishObj) {
+  cardEl.addEventListener("mousedown", () => {
+    longPressTimer = setTimeout(() => {
+      enterMultiSelectMode();
+      toggleFishSelection(fishObj.id);
+      // updateCardSelectionUI();
+    }, 600);
+  });
 
+  cardEl.addEventListener("mouseup", () => {
+    clearTimeout(longPressTimer);
+  });
+
+  cardEl.addEventListener("click", () => {
+    if (isMultiSelectMode) {
+      toggleFishSelection(fishObj.id);
+      updateCardSelectionUI();
+    } else {
+      openSellModalSingle(fishObj); // 原本的單張販售
+    }
+  });
+}
+function exitMultiSelectMode() {
+  isMultiSelectMode = false;
+  selectedFishIds.clear();
+  updateBackpackUI(); // 重繪卡片，移除選取樣式
+  const multiSellBar = document.getElementById("multiSellBar");
+  if (multiSellBar) multiSellBar.style.display = "none";
+}
+function batchSellSelected() {
+  let total = 0;
+  backpack = backpack.filter((f) => {
+    if (selectedFishIds.has(f.id)) {
+      const type = fishTypes.find((t) => t.name === f.name);
+      total += type.price; // 或 f.finalPrice
+      return false;
+    }
+    return true;
+  });
+  money += total;
+  saveBackpack();
+  saveMoney();
+  updateMoneyUI();
+  updateBackpackUI();
+  exitMultiSelectMode();
+}
 function logCatch(message) {
   const bottomInfo = document.getElementById("bottomInfo");
   if (bottomInfo) {
@@ -162,6 +230,7 @@ function openSellModalSingle(fishObj, fishType) {
   modal.show();
 }
 
+// 關閉指示器
 function stopPrecisionBar() {
   if (!precisionInterval) return;
   clearInterval(precisionInterval);
@@ -396,6 +465,7 @@ function updateBackpackUI() {
     const rarityClass = getRarityClass(fishType.probability);
     const card = document.createElement("div");
     card.className = `fish-card ${rarityClass}`;
+    card.dataset.id = fish.id; 
     card.innerHTML = `
       <img src="${fishType.image}" class="fish-icon" alt="${fish.name}">
       <div class="fish-info">
@@ -404,7 +474,7 @@ function updateBackpackUI() {
         <div class="fish-value">💰：${fish.finalPrice} G</div>
       </div>
     `;
-    card.addEventListener("click", () => openSellModalSingle(fish, fishType));
+    handleFishCardEvents(card, fish); 
     grid.appendChild(card);
   }
 

@@ -407,3 +407,20 @@ body {
   height: 50px;
   object-fit: contain;
 }
+
+.fish-card.selected {
+  outline: 3px solid gold;
+  transform: scale(1.02);
+}
+.batch-sell-bar {
+  position: fixed;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 1000;
+}
