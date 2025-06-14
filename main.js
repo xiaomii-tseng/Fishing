@@ -135,7 +135,7 @@ function handleFishCardEvents(cardEl, fishObj) {
     longPressTimer = setTimeout(() => {
       enterMultiSelectMode();
       toggleFishSelection(fishObj.id);
-      // updateCardSelectionUI();
+      updateCardSelectionUI(); // <- 別忘了更新畫面
     }, 600);
   });
 
@@ -147,9 +147,8 @@ function handleFishCardEvents(cardEl, fishObj) {
     if (isMultiSelectMode) {
       toggleFishSelection(fishObj.id);
       updateCardSelectionUI();
-    } else {
-      openSellModalSingle(fishObj); // 原本的單張販售
     }
+    // ✅ 這裡不要再打開單張 modal，不寫任何 else
   });
 }
 function exitMultiSelectMode() {
@@ -194,41 +193,41 @@ document
   .addEventListener("click", stopPrecisionBar);
 
 // 🛒 賣魚對話框
-function openSellModalSingle(fishObj, fishType) {
-  const input = document.getElementById("sellQuantity");
-  const label = document.getElementById("sellFishName");
-  const total = document.getElementById("sellTotal");
-  const confirmBtn = document.getElementById("confirmSell");
+// function openSellModalSingle(fishObj, fishType) {
+//   const input = document.getElementById("sellQuantity");
+//   const label = document.getElementById("sellFishName");
+//   const total = document.getElementById("sellTotal");
+//   const confirmBtn = document.getElementById("confirmSell");
 
-  // UI 初始化
-  input.value = 1;
-  input.disabled = true;
-  label.textContent = `販售：${fishObj.name}`;
-  input.textContent = `${fishObj.size.toFixed(1)} %`;
-  total.textContent = `${fishObj.finalPrice} G`;
+//   // UI 初始化
+//   input.value = 1;
+//   input.disabled = true;
+//   label.textContent = `販售：${fishObj.name}`;
+//   input.textContent = `${fishObj.size.toFixed(1)} %`;
+//   total.textContent = `${fishObj.finalPrice} G`;
 
-  // 販售事件
-  confirmBtn.onclick = () => {
-    // 移除該魚（依據 UUID）
-    backpack = backpack.filter((f) => f.id !== fishObj.id);
+//   // 販售事件
+//   confirmBtn.onclick = () => {
+//     // 移除該魚（依據 UUID）
+//     backpack = backpack.filter((f) => f.id !== fishObj.id);
 
-    // 加錢
-    money += fishObj.finalPrice;
-    saveBackpack();
-    saveMoney();
-    updateBackpackUI();
-    updateMoneyUI();
+//     // 加錢
+//     money += fishObj.finalPrice;
+//     saveBackpack();
+//     saveMoney();
+//     updateBackpackUI();
+//     updateMoneyUI();
 
-    // 關閉 modal
-    const modalEl = document.getElementById("sellModal");
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) modal.hide();
-  };
+//     // 關閉 modal
+//     const modalEl = document.getElementById("sellModal");
+//     const modal = bootstrap.Modal.getInstance(modalEl);
+//     if (modal) modal.hide();
+//   };
 
-  // 顯示 modal
-  const modal = new bootstrap.Modal(document.getElementById("sellModal"));
-  modal.show();
-}
+//   // 顯示 modal
+//   const modal = new bootstrap.Modal(document.getElementById("sellModal"));
+//   modal.show();
+// }
 
 // 關閉指示器
 function stopPrecisionBar() {
