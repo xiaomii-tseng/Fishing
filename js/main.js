@@ -383,7 +383,7 @@ function loadBackpack() {
 }
 function updateMoneyUI() {
   const el = document.getElementById("coinCount");
-  if (el) el.textContent = money.toLocaleString();
+  if (el) el.textContent = parseInt(localStorage.getItem("fishing-money") || "0", 10).toLocaleString();
 }
 function saveMoney() {
   localStorage.setItem("fishing-money", money);
@@ -454,7 +454,27 @@ const RARITY_TABLE = [
   { key: "rare", label: "稀有", buffCount: 3 }
 ];
 
+const RARITY_PROBABILITIES = [
+  { rarity: "普通", chance: 94 }, 
+  { rarity: "高級", chance: 5.5 },
+  { rarity: "稀有", chance: 0.5 },
+];
+const CHEST_COST = 50;
+
 document.querySelector(".shop-chest").addEventListener("click", () => {
+  const currentMoney = parseInt(localStorage.getItem("fishing-money") || "0", 10);
+
+  if (currentMoney < CHEST_COST) {
+    alert("金幣不足，無法抽寶箱！");
+    return;
+  }
+
+  // 扣錢
+  const updatedMoney = currentMoney - CHEST_COST;
+  localStorage.setItem("fishing-money", updatedMoney.toString());
+  updateMoneyUI(); // 若有即時更新顯示金額的 function
+
+  // 正常抽裝備
   fetch("item.json")
     .then((res) => res.json())
     .then((items) => {
@@ -483,9 +503,18 @@ function getRandomItem(items) {
 
 // 隨機稀有度（你可改加機率控制）
 function getRandomRarity() {
-  const index = Math.floor(Math.random() * RARITY_TABLE.length);
-  return RARITY_TABLE[index];
+  const rand = Math.random() * 100;
+  let sum = 0;
+  for (const entry of RARITY_PROBABILITIES) {
+    sum += entry.chance;
+    if (rand < sum) {
+      return RARITY_TABLE.find(r => r.label === entry.rarity);
+    }
+  }
+  return RARITY_TABLE.find(r => r.label === RARITY_PROBABILITIES[RARITY_PROBABILITIES.length - 1].rarity);
 }
+
+
 
 // 給對應數量 buff
 function generateBuffs(count) {
@@ -517,8 +546,38 @@ function saveToOwnedEquipment(item) {
   const list = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
   list.push(item);
   localStorage.setItem("owned-equipment", JSON.stringify(list));
+  updateOwnedEquipListUI();
 }
+function updateOwnedEquipListUI() {
+  const container = document.getElementById("ownedEquipList");
+  if (!container) return;
 
+  const owned = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+
+  container.innerHTML = ""; // 清空現有內容
+
+  for (const equip of owned) {
+    const card = document.createElement("div");
+    card.className = "equipment-card";
+
+    // 裝備卡片結構
+    card.innerHTML = `
+      <div class="equipment-top">
+        <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
+        <div class="equipment-name">${equip.name}</div>
+      </div>
+      <ul class="equipment-buffs">
+        ${equip.buffs
+          .map(
+            (buff) => `<li>${buff.label} +${buff.value}%</li>`
+          )
+          .join("")}
+      </ul>
+    `;
+
+    container.appendChild(card);
+  }
+}
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("shopModal"));
@@ -548,6 +607,7 @@ document.querySelectorAll(".fnc-anm").forEach((btn) => {
 document.getElementById("openEquip").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("equipModal"));
   modal.show();
+  updateOwnedEquipListUI();
 });
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
