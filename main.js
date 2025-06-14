@@ -2,7 +2,7 @@
 
 // 🐟 儲存魚資料
 let fishTypes = [];
-const STORAGE_KEY = "fishing-backpack";
+const STORAGE_KEY = "fishing-v2-backpack";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
 let manualFishingTimeout = null;
