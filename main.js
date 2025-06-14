@@ -216,7 +216,7 @@ const toggleBtn = document.getElementById("toggleModeBtn");
 const fishingStatus = document.getElementById("fishingStatus");
 // 初始化狀態
 if (fishingStatus) {
-  fishingStatus.textContent = isAutoMode ? "自動釣魚中..." : "稀有率加成中...";
+  fishingStatus.textContent = isAutoMode ? "自動釣魚中..." : "機率加成中...";
 }
 if (toggleBtn) {
   toggleBtn.addEventListener("click", () => {
@@ -226,7 +226,7 @@ if (toggleBtn) {
     if (fishingStatus) {
       fishingStatus.textContent = isAutoMode
         ? "自動釣魚中..."
-        : "稀有率加成中...";
+        : "機率加成中...";
     }
     stopAutoFishing();
     clearTimeout(manualFishingTimeout);
