@@ -87,49 +87,26 @@
                             <option value="desc">價格由高到低</option>
                         </select>
                     </div>
-                    <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body select-body">
                     <div id="inventory">
                         <div class="inventory">
                             載入中...
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🐟 賣魚對話框 -->
-    <div class="modal fade" id="sellModal" tabindex="-1" aria-labelledby="sellModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered custom-modal-width mx-auto">
-            <div class="modal-content sell-modal">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="sellFishName">販售：？？</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="">
-                        <strong>尺寸：</strong>
-                        <span id="sellQuantity"></span>
-                    </div>
-                    <div class="mt-3">
-                        <strong>金額：</strong>
-                        <span id="sellTotal">0 G</span>
-                    </div>
-                </div>
-                <div class="modal-footer d-flex justify-content-center">
-                    <button id="confirmSell" class="sell-btn fnc-anm">確認販售</button>
+                <!-- 多選操作按鈕 -->
+                <div id="multiSelectActions" class="d-flex justify-content-center gap-2 my-2" style="display: none;">
+                    <div id="startMultiSelect" class="sell-btn fnc-anm">選取</div>
+                    <div id="multiSellBtn" class="sell-btn fnc-anm">販售</div>
+                    <div id="cancelMultiSelectBtn" class="sell-btn fnc-anm">取消</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="batchSellBar" style="display:none" class="batch-sell-bar">
-        <button onclick="batchSellSelected()" class="btn btn-danger">販售選取魚</button>
-        <button onclick="exitMultiSelectMode()" class="btn btn-secondary">取消</button>
-    </div>
     <div id="catchPopup" class="catch-popup"></div>
 
 

@@ -124,7 +124,6 @@ body {
   overflow-y: auto;
   background-color: rgba(62, 62, 62, 0.61); /* 半透明背景 */
   padding: 1rem;
-  border-radius: 0 0 10px 10px;
 }
 .modal-title {
   font-size: 25px;
@@ -132,7 +131,12 @@ body {
   letter-spacing: 1px;
   text-shadow: 2px 2px 0px #000;
 }
-
+.select-body{
+  border: 2px solid #6b4f30 ;
+}
+.select-body2{
+  border: 2px dashed gold ;
+}
 /* 魚的卡片 */
 .fish-card {
   display: flex;
