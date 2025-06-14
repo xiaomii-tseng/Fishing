@@ -177,19 +177,6 @@ function batchSellSelected() {
   updateBackpackUI();
   exitMultiSelectMode();
 }
-document.getElementById("startMultiSelect").addEventListener("click", ()=>{
-  enterMultiSelectMode();
-  enterSelectStyleMode();
-});
-document.getElementById("multiSellBtn").addEventListener("click", ()=>{
-  batchSellSelected()
-  exitMultiSelectMode();
-  exitSelectStyleMode()
-});
-document.getElementById("cancelMultiSelectBtn").addEventListener("click", ()=>{
-  exitMultiSelectMode();
-  exitSelectStyleMode()
-});
 function logCatch(message) {
   const bottomInfo = document.getElementById("bottomInfo");
   if (bottomInfo) {
@@ -303,9 +290,6 @@ function addClickBounce(el) {
   );
 }
 
-document.querySelectorAll(".fnc-anm").forEach((btn) => {
-  btn.addEventListener("click", () => addClickBounce(btn));
-});
 
 // ⏳ 自動釣魚主迴圈
 function startAutoFishing() {
@@ -455,11 +439,116 @@ function updateBackpackUI() {
 
   inventory.appendChild(grid);
 }
+
+// 抽寶箱
+const BUFF_TYPES = [
+  { type: "increaseCatchRate", label: "增加上鉤率" },
+  { type: "increaseRareRate", label: "增加稀有率" },
+  { type: "increaseBigFishChance", label: "大體型魚機率" },
+  { type: "increaseSellValue", label: "增加販售金額" }
+];
+
+const RARITY_TABLE = [
+  { key: "common", label: "普通", buffCount: 1 },
+  { key: "uncommon", label: "高級", buffCount: 2 },
+  { key: "rare", label: "稀有", buffCount: 3 }
+];
+
+document.querySelector(".shop-chest").addEventListener("click", () => {
+  fetch("item.json")
+    .then((res) => res.json())
+    .then((items) => {
+      const item = getRandomItem(items);
+      const rarity = getRandomRarity();
+      const buffs = generateBuffs(rarity.buffCount);
+
+      const newEquip = {
+        id: crypto.randomUUID(),
+        name: item.name,
+        image: item.image,
+        type: item.type,
+        rarity: rarity.key,
+        buffs: buffs
+      };
+
+      saveToOwnedEquipment(newEquip);
+      alert(`你獲得了：${rarity.label}「${item.name}」！`);
+    });
+});
+
+// 從 item.json 抽一個
+function getRandomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+// 隨機稀有度（你可改加機率控制）
+function getRandomRarity() {
+  const index = Math.floor(Math.random() * RARITY_TABLE.length);
+  return RARITY_TABLE[index];
+}
+
+// 給對應數量 buff
+function generateBuffs(count) {
+  const shuffled = [...BUFF_TYPES].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map(buff => ({
+    type: buff.type,
+    label: buff.label,
+    value: getBuffValue(buff.type)
+  }));
+}
+
+// 可根據 buff 類型定義不同範圍
+function getBuffValue(type) {
+  switch (type) {
+    case "increaseCatchRate": return randomInt(1, 30);
+    case "increaseRareRate": return randomInt(1, 30);
+    case "increaseBigFishChance": return randomInt(1, 30);
+    case "increaseSellValue": return randomInt(1, 30);
+    default: return 1;
+  }
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// 儲存到 localStorage
+function saveToOwnedEquipment(item) {
+  const list = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  list.push(item);
+  localStorage.setItem("owned-equipment", JSON.stringify(list));
+}
+
+// 下面是 document
+document.getElementById("openShop").addEventListener("click", () => {
+  const modal = new bootstrap.Modal(document.getElementById("shopModal"));
+  modal.show();
+});
+
+document.getElementById("startMultiSelect").addEventListener("click", ()=>{
+  enterMultiSelectMode();
+  enterSelectStyleMode();
+});
+document.getElementById("multiSellBtn").addEventListener("click", ()=>{
+  batchSellSelected()
+  exitMultiSelectMode();
+  exitSelectStyleMode()
+});
+document.getElementById("cancelMultiSelectBtn").addEventListener("click", ()=>{
+  exitMultiSelectMode();
+  exitSelectStyleMode()
+});
 document.getElementById("sortSelect").addEventListener("change", (e) => {
   currentSort = e.target.value;
   updateBackpackUI();
 });
-
+document.querySelectorAll(".fnc-anm").forEach((btn) => {
+  btn.addEventListener("click", () => addClickBounce(btn));
+});
+document.getElementById("openEquip").addEventListener("click", () => {
+  const modal = new bootstrap.Modal(document.getElementById("equipModal"));
+  modal.show();
+});
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

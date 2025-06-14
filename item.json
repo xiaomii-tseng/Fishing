@@ -1,0 +1,20 @@
+[
+    {
+        "name": "普通釣竿",
+        "probability": 50,
+        "image": "images/equip/rod1.png",
+        "type": "rod"
+    },
+    {
+        "name": "金屬釣竿",
+        "probability": 20,
+        "image": "images/equip/rod2.png",
+        "type": "rod"
+    },
+    {
+        "name": "黃金釣竿",
+        "probability": 5,
+        "image": "images/equip/rod3.png",
+        "type": "rod"
+    }
+]
