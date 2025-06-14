@@ -426,11 +426,9 @@ function updateBackpackUI() {
   let entries = [...backpack];
   if (currentSort) {
     entries.sort((a, b) => {
-      const fishA = fishTypes.find((f) => f.name === a.name);
-      const fishB = fishTypes.find((f) => f.name === b.name);
-      const priceA = fishA?.price || 0;
-      const priceB = fishB?.price || 0;
-      return currentSort === "asc" ? priceA - priceB : priceB - priceA;
+    const priceA = a.finalPrice || 0;
+    const priceB = b.finalPrice || 0;
+    return currentSort === "asc" ? priceA - priceB : priceB - priceA;
     });
   }
 
