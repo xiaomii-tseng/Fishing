@@ -190,9 +190,6 @@ document.getElementById("cancelMultiSelectBtn").addEventListener("click", ()=>{
   exitMultiSelectMode();
   exitSelectStyleMode()
 });
-document.getElementById("startMultiSelect").addEventListener("click", () => {
-  enterMultiSelectMode();
-});
 function logCatch(message) {
   const bottomInfo = document.getElementById("bottomInfo");
   if (bottomInfo) {
