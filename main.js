@@ -2,7 +2,7 @@
 
 // 🐟 儲存魚資料
 let fishTypes = [];
-const STORAGE_KEY = "fishing-v2-backpack";
+const STORAGE_KEY = "fishing-v3-backpack";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
 let manualFishingTimeout = null;
@@ -93,8 +93,8 @@ function logCatchCard(fishObj, fishType) {
       <img src="${fishType.image}" class="fish-icon" alt="${fishType.name}">
       <div class="fish-info">
         <div class="fish-name">${fishType.name}</div>
-        <div class="fish-size">尺寸：${fishObj.size.toFixed(1)} cm</div>
-        <div class="fish-value">💰：${fishType.price} G</div>
+        <div class="fish-size">尺寸：${fishObj.size.toFixed(1)} %</div>
+        <div class="fish-value">💰：${fishObj.finalPrice} G</div>
       </div>
     `;
     bottomInfo.appendChild(card);
@@ -137,7 +137,7 @@ function openSellModalSingle(fishObj, fishType) {
   input.disabled = true;
   label.textContent = `販售：${fishObj.name}`;
   input.textContent = `${fishObj.size.toFixed(1)} %`;
-  total.textContent = `${fishType.price} G`;
+  total.textContent = `${fishObj.finalPrice} G`;
 
   // 販售事件
   confirmBtn.onclick = () => {
@@ -145,7 +145,7 @@ function openSellModalSingle(fishObj, fishType) {
     backpack = backpack.filter((f) => f.id !== fishObj.id);
 
     // 加錢
-    money += fishType.price;
+    money += fishObj.finalPrice;
     saveBackpack();
     saveMoney();
     updateBackpackUI();
@@ -192,9 +192,9 @@ function stopPrecisionBar() {
 }
 
 // 計算魚的價值
-function assignPriceByProbability(fishList, baseValue = 100) {
+function assignPriceByProbability(fishList, baseValue = 70) {
   return fishList.map((fish) => {
-    const price = Math.floor(baseValue / (fish.probability / 5));
+    const price = Math.floor(baseValue / (fish.probability / 7));
     return {
       ...fish,
       price,
@@ -216,7 +216,7 @@ const toggleBtn = document.getElementById("toggleModeBtn");
 const fishingStatus = document.getElementById("fishingStatus");
 // 初始化狀態
 if (fishingStatus) {
-  fishingStatus.textContent = isAutoMode ? "自動釣魚中..." : "手動釣魚中...";
+  fishingStatus.textContent = isAutoMode ? "自動釣魚中..." : "稀有率加成中...";
 }
 if (toggleBtn) {
   toggleBtn.addEventListener("click", () => {
@@ -226,7 +226,7 @@ if (toggleBtn) {
     if (fishingStatus) {
       fishingStatus.textContent = isAutoMode
         ? "自動釣魚中..."
-        : "手動釣魚中...";
+        : "稀有率加成中...";
     }
     stopAutoFishing();
     clearTimeout(manualFishingTimeout);
@@ -321,10 +321,15 @@ function getRandomFish() {
 
 // 打包卡片資訊
 function createFishInstance(fishType) {
+  // 隨機產生尺寸並四捨五入至小數點一位
+  const size = parseFloat((Math.random() * 100).toFixed(1));
+  // 根據尺寸計算最終價格（最高增加35%）
+  const finalPrice = Math.floor(fishType.price * (1 + (size / 100) * 0.35));
   return {
     id: crypto.randomUUID(),
     name: fishType.name,
-    size: parseFloat((Math.random() * 100).toFixed(1)),
+    size: size,
+    finalPrice: finalPrice,
     caughtAt: new Date().toISOString(),
   };
 }
@@ -356,6 +361,7 @@ function saveMoney() {
 function loadMoney() {
   return parseInt(localStorage.getItem("fishing-money") || "0", 10);
 }
+
 // 📦 更新背包畫面
 function updateBackpackUI() {
   const inventory = document.getElementById("inventory");
@@ -394,8 +400,8 @@ function updateBackpackUI() {
       <img src="${fishType.image}" class="fish-icon" alt="${fish.name}">
       <div class="fish-info">
         <div class="fish-name">${fish.name}</div>
-        <div class="fish-size">尺寸：${fish.size} %</div>
-        <div class="fish-value">💰：${fishType.price} G</div>
+        <div class="fish-size">尺寸：${fish.size.toFixed(1)} %</div>
+        <div class="fish-value">💰：${fish.finalPrice} G</div>
       </div>
     `;
     card.addEventListener("click", () => openSellModalSingle(fish, fishType));
