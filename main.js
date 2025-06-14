@@ -96,7 +96,7 @@ function logCatchCard(fishObj, fishType) {
       <img src="${fishType.image}" class="fish-icon" alt="${fishType.name}">
       <div class="fish-info">
         <div class="fish-name">${fishType.name}</div>
-        <div class="fish-size">尺寸：${fishObj.size.toFixed(1)} %</div>
+        <div class="fish-size">體型：${fishObj.size.toFixed(1)} %</div>
         <div class="fish-value">💰：${fishObj.finalPrice} G</div>
       </div>
     `;
@@ -367,9 +367,9 @@ function getRandomFish() {
 
 // 打包卡片資訊
 function createFishInstance(fishType) {
-  // 隨機產生尺寸並四捨五入至小數點一位
+  // 隨機產生體型並四捨五入至小數點一位
   const size = parseFloat((Math.random() * 100).toFixed(1));
-  // 根據尺寸計算最終價格（最高增加35%）
+  // 根據體型計算最終價格（最高增加35%）
   const finalPrice = Math.floor(fishType.price * (1 + (size / 100) * 0.35));
   return {
     id: crypto.randomUUID(),
@@ -445,7 +445,7 @@ function updateBackpackUI() {
       <img src="${fishType.image}" class="fish-icon" alt="${fish.name}">
       <div class="fish-info">
         <div class="fish-name">${fish.name}</div>
-        <div class="fish-size">尺寸：${fish.size.toFixed(1)} %</div>
+        <div class="fish-size">體型：${fish.size.toFixed(1)} %</div>
         <div class="fish-value">💰：${fish.finalPrice} G</div>
       </div>
     `;
