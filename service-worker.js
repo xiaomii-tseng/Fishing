@@ -2,14 +2,15 @@ const CACHE_NAME = "fishing-pwa-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
-  "/main.js",
-  "/main.css",
+  "/js/main.js",
+  "/css/main.css",
   "/manifest.json",
   "/images/icons/icon-192.png",
   "/images/icons/icon-512.png",
   "/images/index/index3.png",
   "/images/shop/chest1.png",
-  "/images/shop/chest2.png"
+  "/images/shop/chest2.png",
+  "/images/index/chest2.gif"
 ];
 
 self.addEventListener("install", (event) => {

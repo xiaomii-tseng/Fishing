@@ -12,6 +12,7 @@ let currentSort = "asc";
 let longPressTimer = null;
 let isMultiSelectMode = false;
 const selectedFishIds = new Set();
+const EQUIPPED_KEY = "equipped-items";
 
 // 🎣 讀取 fish.json 並開始自動釣魚
 fetch("fish.json")
@@ -23,6 +24,94 @@ fetch("fish.json")
     if (isAutoMode) startAutoFishing();
   })
   .catch((err) => console.error("❌ 載入魚資料失敗", err));
+
+// 載入目前已裝備的資料
+function loadEquippedItems() {
+  return JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
+}
+function equipItem(item) {
+  const equipped = loadEquippedItems();
+  let owned = loadOwnedEquipments();
+
+  // 1. 卸下原裝備 → 加回背包
+  const prevEquipped = equipped[item.type];
+  if (prevEquipped) {
+    owned.push(prevEquipped);
+  }
+
+  // 2. 從背包移除要穿的新裝備（根據 id）
+  owned = owned.filter((e) => e.id !== item.id);
+
+  // 3. 設定新的裝備到該欄位
+  equipped[item.type] = item;
+
+  // 4. 儲存
+  saveEquippedItems(equipped);
+  saveOwnedEquipments(owned);
+
+  // 5. 更新畫面
+  updateEquippedUI();
+  updateOwnedEquipListUI();
+}
+
+function loadOwnedEquipments() {
+  return JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+}
+function saveOwnedEquipments(data) {
+  localStorage.setItem("owned-equipment", JSON.stringify(data));
+}
+function loadEquippedItems() {
+  return JSON.parse(localStorage.getItem("equipped-items") || "{}");
+}
+function saveEquippedItems(data) {
+  localStorage.setItem("equipped-items", JSON.stringify(data));
+}
+
+// 儲存裝備
+function saveEquippedItems(data) {
+  localStorage.setItem(EQUIPPED_KEY, JSON.stringify(data));
+}
+
+// 穿裝備
+function updateEquippedUI() {
+  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+
+  document.querySelectorAll(".slot").forEach((slotEl) => {
+    const type = slotEl.dataset.slot;
+    const item = equipped[type];
+
+    // 清空內容
+    slotEl.innerHTML = "";
+
+    if (item && item.image) {
+      const img = document.createElement("img");
+      img.src = item.image;
+      img.alt = item.name;
+      img.classList.add("equipped-icon"); // 可加 CSS 控制尺寸
+      slotEl.appendChild(img);
+    } else {
+      // 顯示預設欄位名稱
+      slotEl.textContent = getSlotLabel(type);
+    }
+  });
+}
+
+function getSlotLabel(type) {
+  switch (type) {
+    case "rod":
+      return "釣竿";
+    case "bait":
+      return "魚餌";
+    case "hat":
+      return "帽子";
+    case "outfit":
+      return "衣服";
+    case "shoes":
+      return "鞋子";
+    default:
+      return "";
+  }
+}
 
 // 正規化魚的機率100%
 function normalizeFishProbabilities(fishList) {
@@ -76,6 +165,41 @@ function startPrecisionBar() {
     indicator.style.left = pos + "px";
   }, intervalTime);
 }
+
+// 綁定所有裝備欄位點擊事件
+document.querySelectorAll(".slot").forEach((slot) => {
+  slot.addEventListener("click", () => {
+    const slotKey = slot.dataset.slot; // 例如 rod、bait
+    const equipped = loadEquippedItems();
+    const item = equipped[slotKey];
+    showEquipInfoModal(item);
+  });
+});
+
+// 顯示裝備資訊 Modal
+function showEquipInfoModal(item) {
+  const modalBody = document.getElementById("equipInfoBody");
+
+  if (!item) {
+    modalBody.innerHTML = `<p>尚未裝備道具</p>`;
+  } else {
+    modalBody.innerHTML = `
+      <div class="equip-info-card">
+        <img src="${item.image}" alt="${item.name}">
+        <div class="fw-bold">${item.name}</div>
+        <ul class="buffs">
+          ${item.buffs
+            .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
+            .join("")}
+        </ul>
+      </div>
+    `;
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById("equipInfoModal"));
+  modal.show();
+}
+
 // 釣魚資訊
 function logCatchCard(fishObj, fishType) {
   const bottomInfo = document.getElementById("bottomInfo");
@@ -608,39 +732,93 @@ function updateOwnedEquipListUI() {
 
     container.appendChild(card);
     card.addEventListener("click", () => {
+      selectedEquipForAction = equip;
       openEquipActionModal(equip);
     });
   }
 }
 
 // 選取的裝備
-function openEquipActionModal(equip) {
-  const modal = new bootstrap.Modal(document.getElementById("equipActionModal"));
-  const content = document.getElementById("equipActionContent");
+function openEquipActionModal(selectedEquip) {
+  const modal = new bootstrap.Modal(
+    document.getElementById("equipActionModal")
+  );
 
-  content.innerHTML = `
+  const selectedCardHTML = generateEquipCardHTML(selectedEquip);
+  document.getElementById("equipActionCard").innerHTML = selectedCardHTML;
+
+  const equippedItem = getEquippedItemByType(selectedEquip.type);
+  const equippedCardHTML = equippedItem
+    ? generateEquipCardHTML(equippedItem)
+    : `<div class="text-light">尚未裝備</div>`;
+  document.getElementById("currentlyEquippedCard").innerHTML = equippedCardHTML;
+
+  document.getElementById("equipBtn").onclick = () => {
+    equipItem(selectedEquip); // 實作你自己的裝備邏輯
+    updateCharacterStats();
+    modal.hide();
+  };
+
+  modal.show();
+}
+function generateEquipCardHTML(equip) {
+  return `
     <div class="equipment-card">
-      <div class="equipment-top">
+      <div class="equipment-top d-flex align-items-center gap-2">
         <img src="${equip.image}" class="equipment-icon" />
         <div class="equipment-name">${equip.name}</div>
       </div>
-      <ul class="equipment-buffs">
-        ${equip.buffs.map(b => `<li>${b.label} +${b.value}%</li>`).join("")}
+      <ul class="equipment-buffs mt-2">
+        ${equip.buffs.map((b) => `<li>${b.label} +${b.value}%</li>`).join("")}
       </ul>
     </div>
   `;
-
-  // 你可以在這裡綁定每個按鈕功能
-  document.getElementById("equipBtn").onclick = () => {
-    console.log("裝備功能（之後實作）");
-    modal.hide();
-  };
-  document.getElementById("dismantleBtn").onclick = () => {
-    console.log("拆解功能（之後實作）");
-    modal.hide();
-  };
-  modal.show();
 }
+// 取得穿戴的裝備
+function getEquippedItemByType(type) {
+  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  return equipped[type] || null;
+}
+
+// 取得裝備數值
+function updateCharacterStats() {
+  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+
+  // 初始化各屬性
+  let stats = {
+    increaseCatchRate: 0,
+    increaseRareRate: 0,
+    increaseBigFishChance: 0,
+    increaseSellValue: 0,
+  };
+
+  // 累加各裝備的 buff
+  for (const slot in equipped) {
+    const item = equipped[slot];
+    if (!item || !item.buffs) continue;
+
+    for (const buff of item.buffs) {
+      if (stats.hasOwnProperty(buff.type)) {
+        stats[buff.type] += buff.value;
+      }
+    }
+  }
+
+  // 更新畫面
+  document.querySelector(
+    ".increase-catch-rate"
+  ).textContent = `增加上鉤率：${stats.increaseCatchRate}%`;
+  document.querySelector(
+    ".increase-rare-rate"
+  ).textContent = `增加稀有率：${stats.increaseRareRate}%`;
+  document.querySelector(
+    ".increase-big-fish-chance"
+  ).textContent = `大體型機率：${stats.increaseBigFishChance}%`;
+  document.querySelector(
+    ".increase-sellValue"
+  ).textContent = `增加販售金額：${stats.increaseSellValue}%`;
+}
+
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("shopModal"));
@@ -673,7 +851,28 @@ document.getElementById("openEquip").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("equipModal"));
   modal.show();
   updateOwnedEquipListUI();
+  updateEquippedUI();
+  updateCharacterStats();
 });
+document.getElementById("dismantleBtn").addEventListener("click", () => {
+  if (!selectedEquipForAction) return;
+  // 取得目前裝備列表
+  let owned = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  // 根據 ID 過濾掉這件裝備
+  owned = owned.filter((e) => e.id !== selectedEquipForAction.id);
+  // 儲存回 localStorage
+  localStorage.setItem("owned-equipment", JSON.stringify(owned));
+  // 更新畫面
+  updateOwnedEquipListUI();
+  // 關閉 modal
+  const modal = bootstrap.Modal.getInstance(
+    document.getElementById("equipActionModal")
+  );
+  if (modal) modal.hide();
+  // 清除選擇的裝備
+  selectedEquipForAction = null;
+});
+
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

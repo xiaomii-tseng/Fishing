@@ -122,12 +122,12 @@
                     <!-- 角色資訊 -->
                     <div class="character-panel d-flex justify-content-around">
                         <div>
-                            <div class="character-level">增加上鉤率：5%</div>
-                            <div class="character-level">增加稀有率：10%</div>
+                            <div class="increase-catch-rate character-level">增加上鉤率：5%</div>
+                            <div class="increase-rare-rate character-level">增加稀有率：10%</div>
                         </div>
                         <div>
-                            <div class="character-level">大體型機率：3%</div>
-                            <div class="character-level">增加販售金額：5%</div>
+                            <div class="increase-big-fish-chance character-level">大體型機率：3%</div>
+                            <div class="increase-sellValue character-level">增加販售金額：5%</div>
                         </div>
                     </div>
                     <!-- 裝備欄位 -->
@@ -142,18 +142,23 @@
                     <!-- 擁有裝備 -->
                     <div class="owned-equipment-title">道具欄</div>
                     <div id="ownedEquipList" class="equip-grid">
-                        <div class="equipment-card">
-                            <div class="equipment-top">
-                                <img src="images/equip/rod1.png" alt="裝備圖示" class="equipment-icon" />
-                                <div class="equipment-name">神聖魚竿</div>
-                            </div>
-                            <ul class="equipment-buffs">
-                                <li>增加上鉤率 +5%</li>
-                                <li>增加稀有率 +10%</li>
-                                <li>大體型魚機率 +3%</li>
-                            </ul>
-                        </div>
+                        <!-- 動態加入 -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 當前裝備資訊 Modal -->
+    <div class="modal fade" id="equipInfoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered selected-equip-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">裝備資訊</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="關閉"></button>
+                </div>
+                <div class="modal-body" id="equipInfoBody">
+                    <!-- 動態插入裝備資訊 -->
                 </div>
             </div>
         </div>
@@ -166,16 +171,26 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="equipActionModalLabel">裝備操作</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="關閉"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="關閉"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <div id="equipActionContent">
-                        <!-- 卡片資訊可動態插入 -->
+                    <div id="equipCompareArea">
+                        <div class="equip-compare-slot">
+                            <div class="equip-compare-label">目前穿戴</div>
+                            <div id="currentlyEquippedCard"></div>
+                        </div>
+                        <div class="arrow-up mb-2">
+                            <img src="./images/icons/arrow-up.png" alt="">
+                        </div>
+                        <div class="equip-compare-slot">
+                            <div class="equip-compare-label">選擇的裝備</div>
+                            <div id="equipActionCard"></div>
+                        </div>
                     </div>
                     <div class="d-flex justify-content-center gap-2 mt-3">
-                        <button id="equipBtn" class="single-equip-btn">裝備</button>
-                        <!-- <button id="compareBtn" class="single-equip-btn">比較</button> -->
-                        <button id="dismantleBtn" class="single-equip-btn">拆解</button>
+                        <button id="equipBtn" class="single-equip-btn fnc-anm">裝備</button>
+                        <button id="dismantleBtn" class="single-equip-btn fnc-anm">拆解</button>
                     </div>
                 </div>
             </div>
