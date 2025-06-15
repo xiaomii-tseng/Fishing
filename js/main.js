@@ -635,10 +635,6 @@ function openEquipActionModal(equip) {
     console.log("裝備功能（之後實作）");
     modal.hide();
   };
-  document.getElementById("compareBtn").onclick = () => {
-    console.log("比較功能（之後實作）");
-    modal.hide();
-  };
   document.getElementById("dismantleBtn").onclick = () => {
     console.log("拆解功能（之後實作）");
     modal.hide();

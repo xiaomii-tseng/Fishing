@@ -44,7 +44,7 @@
 
 #equipmentGetCard .equipment-name {
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
 }
 
 #equipmentGetCard .equipment-buffs {
@@ -67,7 +67,6 @@
 .show-equip-modal {
   width: 70%;
   margin: auto;
-
 }
 
 .confirm-btn {

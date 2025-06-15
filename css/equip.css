@@ -75,6 +75,7 @@
   background: #fff8e1;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   height: 115px;
+  max-width: 162px;
 }
 
 .equipment-top {
@@ -111,7 +112,7 @@
   max-width: 400px;
   margin: auto;
 }
-.single-equip-modal .modal-content{
+.single-equip-modal .modal-content {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
   text-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
   color: #ffffff;
@@ -119,6 +120,26 @@
   background-image: url("../images/index/backpackbg.jpg"); /* 可用木紋圖或純色背景 */
   background-size: cover;
   background-repeat: no-repeat;
-  border: 4px solid #dadada;
+  border: 4px solid #646464;
   border-radius: 12px;
+  width: 80%;
+  margin: auto;
+}
+
+.single-equip-modal #equipActionContent {
+  display: flex;
+  justify-content: space-around;
+}
+
+.single-equip-btn {
+  width: 70px;
+  margin-inline: 5px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 5px 10px 5px 10px;
+  border-radius: 8px;
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 0px rgb(4, 49, 60);
+  border: 2px solid #4c2c00;
 }
