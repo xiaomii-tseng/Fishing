@@ -1,6 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.4.2"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.4.4"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
@@ -15,6 +15,8 @@ let longPressTimer = null;
 let isMultiSelectMode = false;
 const selectedFishIds = new Set();
 let selectedEquippedSlot = null;
+let equipInfoModal = null;
+
 
 // 🎣 讀取 fish.json 並開始自動釣魚
 fetch("fish.json")
@@ -166,40 +168,6 @@ function startPrecisionBar() {
     }
     indicator.style.left = pos + "px";
   }, intervalTime);
-}
-
-// 綁定所有裝備欄位點擊事件
-document.querySelectorAll(".slot").forEach((slot) => {
-  slot.addEventListener("click", () => {
-    const slotKey = slot.dataset.slot; // 例如 rod、bait
-    const equipped = loadEquippedItems();
-    const item = equipped[slotKey];
-    showEquipInfoModal(item);
-  });
-});
-
-// 顯示裝備資訊 Modal
-function showEquipInfoModal(item) {
-  const modalBody = document.getElementById("equipInfoBody");
-
-  if (!item) {
-    modalBody.innerHTML = `<p>尚未裝備道具</p>`;
-  } else {
-    modalBody.innerHTML = `
-      <div class="equip-info-card">
-        <img src="${item.image}" alt="${item.name}">
-        <div class="fw-bold">${item.name}</div>
-        <ul class="buffs">
-          ${item.buffs
-            .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
-            .join("")}
-        </ul>
-      </div>
-    `;
-  }
-
-  const modal = new bootstrap.Modal(document.getElementById("equipInfoModal"));
-  modal.show();
 }
 
 // 釣魚資訊
@@ -380,9 +348,9 @@ function stopPrecisionBar() {
 }
 
 // 計算魚的價值
-function assignPriceByProbability(fishList, baseValue = 70) {
+function assignPriceByProbability(fishList, baseValue = 65) {
   return fishList.map((fish) => {
-    const price = Math.floor(baseValue / (fish.probability / 7));
+    const price = Math.floor(baseValue / (fish.probability / 9));
     return {
       ...fish,
       price,
@@ -706,7 +674,7 @@ function getBuffValue(type) {
     case "increaseBigFishChance":
       return randomInt(1, 20);
     case "increaseSellValue":
-      return randomInt(1, 6);
+      return randomInt(1, 7);
     default:
       return 1;
   }
@@ -890,6 +858,8 @@ document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
   // 清除狀態
   selectedEquippedSlot = null;
 });
+
+// 顯示當前裝備資訊
 document.querySelectorAll(".slot").forEach((slotDiv) => {
   slotDiv.addEventListener("click", () => {
     const slotKey = slotDiv.dataset.slot;
@@ -947,6 +917,20 @@ function getTotalBuffs() {
   );
 }
 
+function forceCloseModal(modalId) {
+  const modalEl = document.getElementById(modalId);
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) {
+    modal.hide();
+  }
+
+  // 清理 backdrop 防卡死
+  document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
+  document.body.classList.remove("modal-open");
+  document.body.style = "";
+}
+
+
 window.addEventListener("DOMContentLoaded", () => {
   const seenVersion = localStorage.getItem("seen-version");
   if (seenVersion !== GAME_VERSION) {
@@ -963,6 +947,7 @@ window.addEventListener("DOMContentLoaded", () => {
       });
   }
 });
+
 
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {
