@@ -285,23 +285,41 @@ function exitMultiSelectMode() {
   document.getElementById("multiSelectActions").style.display = "none";
   updateBackpackUI();
 }
+
 function batchSellSelected() {
-  let total = 0;
+  if (selectedFishIds.size === 0) return; // ⛔ 若沒選取，直接不處理
+
+  const buffs = getTotalBuffs();
+  let rawTotal = 0;
+  let finalTotal = 0;
+
+  // 統計價格與刪除背包內的魚
   backpack = backpack.filter((f) => {
     if (selectedFishIds.has(f.id)) {
-      total += f.finalPrice || 0;
-      return false;
+      const base = f.finalPrice;
+      const bonus = Math.floor(base * (buffs.increaseSellValue / 100));
+      rawTotal += base;
+      finalTotal += base + bonus;
+      return false; // 移除這條魚
     }
     return true;
   });
 
-  money += total;
+  // 更新資料
+  money += finalTotal;
   saveBackpack();
   saveMoney();
-  updateMoneyUI();
   updateBackpackUI();
+  updateMoneyUI();
   exitMultiSelectMode();
+
+  // 顯示結果 Modal
+  document.getElementById("rawTotal").textContent = rawTotal.toLocaleString();
+  document.getElementById("bonusTotal").textContent = (finalTotal - rawTotal).toLocaleString();
+  document.getElementById("finalTotal").textContent = finalTotal.toLocaleString();
+  new bootstrap.Modal(document.getElementById("multiSellResultModal")).show();
 }
+
 function logCatch(message) {
   const bottomInfo = document.getElementById("bottomInfo");
   if (bottomInfo) {
@@ -331,7 +349,8 @@ function stopPrecisionBar() {
   const indicatorWidth = indicator.clientWidth;
   const precisionRatio = pos / (trackWidth - indicatorWidth);
 
-  const successChance = 60 + precisionRatio * 38;
+  const buffs = getTotalBuffs();
+  const successChance = Math.min(50 + precisionRatio * 25) * (((buffs.increaseCatchRate * 0.3) + 100) / 100);
   const isSuccess = Math.random() * 100 < successChance;
 
   if (isSuccess) {
@@ -441,7 +460,9 @@ function getWeightedFishByPrecision(precisionRatio) {
   // 建立一個新的魚池，加權機率會隨 precisionRatio 提升而往稀有魚偏移
   const weightedFish = fishTypes.map((fish) => {
     const rarityWeight = 1 / fish.probability; // 機率越低，值越高
-    const bias = 1 + rarityWeight * precisionRatio * 0.1; // 可調係數 0.1
+    const buffs = getTotalBuffs();
+    const rareRateBonus = 1 + buffs.increaseRareRate / 100;
+    const bias = 1 + rarityWeight * precisionRatio * 0.1 * rareRateBonus;
     return {
       ...fish,
       weight: fish.probability * bias,
@@ -478,7 +499,12 @@ function createFishInstance(fishType) {
   // 隨機產生體型並四捨五入至小數點一位
   const size = parseFloat((Math.random() * 100).toFixed(1));
   // 根據體型計算最終價格（最高增加35%）
-  const finalPrice = Math.floor(fishType.price * (1 + (size / 100) * 0.35));
+  const buffs = getTotalBuffs();
+  const bigFishBonus = 1 + buffs.increaseBigFishChance / 300;
+  const adjustedSize = Math.min(size * bigFishBonus, 100); // 限制不超過100%
+
+  const rawPrice = fishType.price * (1 + (adjustedSize / 100) * 0.35);
+  const finalPrice = Math.floor(rawPrice); 
   return {
     id: crypto.randomUUID(),
     name: fishType.name,
@@ -662,13 +688,13 @@ function generateBuffs(count) {
 function getBuffValue(type) {
   switch (type) {
     case "increaseCatchRate":
-      return randomInt(1, 30);
+      return randomInt(1, 20);
     case "increaseRareRate":
       return randomInt(1, 30);
     case "increaseBigFishChance":
-      return randomInt(1, 30);
+      return randomInt(1, 20);
     case "increaseSellValue":
-      return randomInt(1, 30);
+      return randomInt(1, 6);
     default:
       return 1;
   }
@@ -844,7 +870,9 @@ document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
   updateCharacterStats();
 
   // 關閉 Modal
-  const modal = bootstrap.Modal.getInstance(document.getElementById("equipInfoModal"));
+  const modal = bootstrap.Modal.getInstance(
+    document.getElementById("equipInfoModal")
+  );
   if (modal) modal.hide();
 
   // 清除狀態
@@ -863,20 +891,49 @@ document.querySelectorAll(".slot").forEach((slotDiv) => {
       modalBody.innerHTML = `
         <div class="equipment-card">
           <div class="equipment-top">
-            <img src="${item.image}" class="equipment-icon" alt="${item.name}" />
+            <img src="${item.image}" class="equipment-icon" alt="${
+        item.name
+      }" />
             <div class="equipment-name">${item.name}</div>
           </div>
           <ul class="equipment-buffs">
-            ${item.buffs.map(buff => `<li>${buff.label} +${buff.value}%</li>`).join("")}
+            ${item.buffs
+              .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
+              .join("")}
           </ul>
         </div>
       `;
 
-      const modal = new bootstrap.Modal(document.getElementById("equipInfoModal"));
+      const modal = new bootstrap.Modal(
+        document.getElementById("equipInfoModal")
+      );
       modal.show();
     }
   });
 });
+
+// buff實裝
+function getTotalBuffs() {
+  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+
+  return Object.values(equipped).reduce(
+    (buffs, item) => {
+      if (!item.buffs) return buffs;
+      for (const buff of item.buffs) {
+        if (buffs.hasOwnProperty(buff.type)) {
+          buffs[buff.type] += buff.value;
+        }
+      }
+      return buffs;
+    },
+    {
+      increaseCatchRate: 0,
+      increaseRareRate: 0,
+      increaseBigFishChance: 0,
+      increaseSellValue: 0,
+    }
+  );
+}
 
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {
@@ -930,6 +987,10 @@ document.getElementById("dismantleBtn").addEventListener("click", () => {
   if (modal) modal.hide();
   // 清除選擇的裝備
   selectedEquipForAction = null;
+});
+document.getElementById("confirmMultiSellResult").addEventListener("click", () => {
+  const modal = bootstrap.Modal.getInstance(document.getElementById("multiSellResultModal"));
+  if (modal) modal.hide();
 });
 
 // ✅ PWA 支援

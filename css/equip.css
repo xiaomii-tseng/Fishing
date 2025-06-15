@@ -179,7 +179,7 @@
 
 /* 目前裝備資訊 */
 .selected-equip-modal .modal-content{
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
   text-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
   color: #ffffff;
   animation: pop-in 0.3s ease-out;
