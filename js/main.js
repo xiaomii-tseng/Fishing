@@ -1,9 +1,9 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.4.1"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.4.2"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
-const ownedEquipment = "owned-equipment-v2"
+const ownedEquipment = "owned-equipment-v2";
 const EQUIPPED_KEY = "equipped-items-v2";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
@@ -307,17 +307,25 @@ function batchSellSelected() {
   });
 
   // 更新資料
-  money += finalTotal;
+  const currentMoney = parseInt(
+    localStorage.getItem("fishing-money") || "0",
+    10
+  );
+  const newMoney = currentMoney + finalTotal;
+  localStorage.setItem("fishing-money", newMoney);
+  updateMoneyUI();
   saveBackpack();
-  saveMoney();
   updateBackpackUI();
   updateMoneyUI();
   exitMultiSelectMode();
 
   // 顯示結果 Modal
   document.getElementById("rawTotal").textContent = rawTotal.toLocaleString();
-  document.getElementById("bonusTotal").textContent = (finalTotal - rawTotal).toLocaleString();
-  document.getElementById("finalTotal").textContent = finalTotal.toLocaleString();
+  document.getElementById("bonusTotal").textContent = (
+    finalTotal - rawTotal
+  ).toLocaleString();
+  document.getElementById("finalTotal").textContent =
+    finalTotal.toLocaleString();
   new bootstrap.Modal(document.getElementById("multiSellResultModal")).show();
 }
 
@@ -351,7 +359,9 @@ function stopPrecisionBar() {
   const precisionRatio = pos / (trackWidth - indicatorWidth);
 
   const buffs = getTotalBuffs();
-  const successChance = Math.min(50 + precisionRatio * 25) * (((buffs.increaseCatchRate * 0.3) + 100) / 100);
+  const successChance =
+    Math.min(50 + precisionRatio * 25) *
+    ((buffs.increaseCatchRate * 0.3 + 100) / 100);
   const isSuccess = Math.random() * 100 < successChance;
 
   if (isSuccess) {
@@ -399,7 +409,9 @@ if (fishingStatus) {
 if (toggleBtn) {
   toggleBtn.addEventListener("click", () => {
     isAutoMode = !isAutoMode;
-    toggleBtn.textContent = isAutoMode ? "自動模式" : "手動模式";
+    toggleBtn.textContent = isAutoMode
+      ? "點擊進入手動模式"
+      : "點擊進入自動模式";
     // 🐟 更新狀態提示文字
     if (fishingStatus) {
       fishingStatus.textContent = isAutoMode
@@ -505,7 +517,7 @@ function createFishInstance(fishType) {
   const adjustedSize = Math.min(size * bigFishBonus, 100); // 限制不超過100%
 
   const rawPrice = fishType.price * (1 + (adjustedSize / 100) * 0.35);
-  const finalPrice = Math.floor(rawPrice); 
+  const finalPrice = Math.floor(rawPrice);
   return {
     id: crypto.randomUUID(),
     name: fishType.name,
@@ -938,13 +950,17 @@ function getTotalBuffs() {
 window.addEventListener("DOMContentLoaded", () => {
   const seenVersion = localStorage.getItem("seen-version");
   if (seenVersion !== GAME_VERSION) {
-    const versionModal = new bootstrap.Modal(document.getElementById("versionModal"));
+    const versionModal = new bootstrap.Modal(
+      document.getElementById("versionModal")
+    );
     versionModal.show();
 
-    document.getElementById("versionConfirmBtn").addEventListener("click", () => {
-      localStorage.setItem("seen-version", GAME_VERSION);
-      versionModal.hide();
-    });
+    document
+      .getElementById("versionConfirmBtn")
+      .addEventListener("click", () => {
+        localStorage.setItem("seen-version", GAME_VERSION);
+        versionModal.hide();
+      });
   }
 });
 
@@ -1001,10 +1017,14 @@ document.getElementById("dismantleBtn").addEventListener("click", () => {
   // 清除選擇的裝備
   selectedEquipForAction = null;
 });
-document.getElementById("confirmMultiSellResult").addEventListener("click", () => {
-  const modal = bootstrap.Modal.getInstance(document.getElementById("multiSellResultModal"));
-  if (modal) modal.hide();
-});
+document
+  .getElementById("confirmMultiSellResult")
+  .addEventListener("click", () => {
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("multiSellResultModal")
+    );
+    if (modal) modal.hide();
+  });
 
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {
