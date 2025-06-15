@@ -212,3 +212,22 @@
   margin: 0;
   font-size: 0.8rem;
 }
+
+.cencel-equip-btn{
+  width: 70px;
+  margin-block: 10px ;
+  margin-inline: auto;
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 5px 10px 5px 10px;
+  border-radius: 8px;
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 0px rgb(4, 49, 60);
+  border: 2px solid #4c2c00;
+}
+
+.selected-equip-modal .modal-body{
+  display: flex;
+  justify-content: center;
+}

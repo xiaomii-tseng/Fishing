@@ -13,6 +13,7 @@ let longPressTimer = null;
 let isMultiSelectMode = false;
 const selectedFishIds = new Set();
 const EQUIPPED_KEY = "equipped-items";
+let selectedEquippedSlot = null;
 
 // 🎣 讀取 fish.json 並開始自動釣魚
 fetch("fish.json")
@@ -818,6 +819,64 @@ function updateCharacterStats() {
     ".increase-sellValue"
   ).textContent = `增加販售金額：${stats.increaseSellValue}%`;
 }
+
+// 脫下裝備
+document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
+  if (!selectedEquippedSlot) return;
+
+  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  const owned = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+
+  const item = equipped[selectedEquippedSlot];
+  if (!item) return;
+
+  // 移除裝備並放回背包
+  delete equipped[selectedEquippedSlot];
+  owned.push(item);
+
+  // 更新 localStorage
+  localStorage.setItem("equipped-items", JSON.stringify(equipped));
+  localStorage.setItem("owned-equipment", JSON.stringify(owned));
+
+  // 更新畫面
+  updateEquippedUI();
+  updateOwnedEquipListUI();
+  updateCharacterStats();
+
+  // 關閉 Modal
+  const modal = bootstrap.Modal.getInstance(document.getElementById("equipInfoModal"));
+  if (modal) modal.hide();
+
+  // 清除狀態
+  selectedEquippedSlot = null;
+});
+document.querySelectorAll(".slot").forEach((slotDiv) => {
+  slotDiv.addEventListener("click", () => {
+    const slotKey = slotDiv.dataset.slot;
+    const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+    const item = equipped[slotKey];
+
+    if (item) {
+      selectedEquippedSlot = slotKey;
+
+      const modalBody = document.getElementById("equipInfoBody");
+      modalBody.innerHTML = `
+        <div class="equipment-card">
+          <div class="equipment-top">
+            <img src="${item.image}" class="equipment-icon" alt="${item.name}" />
+            <div class="equipment-name">${item.name}</div>
+          </div>
+          <ul class="equipment-buffs">
+            ${item.buffs.map(buff => `<li>${buff.label} +${buff.value}%</li>`).join("")}
+          </ul>
+        </div>
+      `;
+
+      const modal = new bootstrap.Modal(document.getElementById("equipInfoModal"));
+      modal.show();
+    }
+  });
+});
 
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {
