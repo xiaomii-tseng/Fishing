@@ -103,6 +103,22 @@
   color: #202020;
 }
 
-.modal-body{
+.modal-body {
   background-color: #20202075;
+}
+
+.single-equip-modal {
+  max-width: 400px;
+  margin: auto;
+}
+.single-equip-modal .modal-content{
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  animation: pop-in 0.3s ease-out;
+  background-image: url("../images/index/backpackbg.jpg"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 4px solid #dadada;
+  border-radius: 12px;
 }

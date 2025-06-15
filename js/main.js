@@ -137,7 +137,7 @@ function enterSelectStyleMode() {
     body.classList.remove("select-body");
     body.classList.add("select-body2");
   }
-}  
+}
 function exitSelectStyleMode() {
   const body = document.querySelector(".modal-body");
   if (body) {
@@ -290,7 +290,6 @@ function addClickBounce(el) {
   );
 }
 
-
 // ⏳ 自動釣魚主迴圈
 function startAutoFishing() {
   if (autoFishingInterval) return;
@@ -383,7 +382,11 @@ function loadBackpack() {
 }
 function updateMoneyUI() {
   const el = document.getElementById("coinCount");
-  if (el) el.textContent = parseInt(localStorage.getItem("fishing-money") || "0", 10).toLocaleString();
+  if (el)
+    el.textContent = parseInt(
+      localStorage.getItem("fishing-money") || "0",
+      10
+    ).toLocaleString();
 }
 function saveMoney() {
   localStorage.setItem("fishing-money", money);
@@ -410,9 +413,9 @@ function updateBackpackUI() {
   let entries = [...backpack];
   if (currentSort) {
     entries.sort((a, b) => {
-    const priceA = a.finalPrice || 0;
-    const priceB = b.finalPrice || 0;
-    return currentSort === "asc" ? priceA - priceB : priceB - priceA;
+      const priceA = a.finalPrice || 0;
+      const priceB = b.finalPrice || 0;
+      return currentSort === "asc" ? priceA - priceB : priceB - priceA;
     });
   }
 
@@ -424,7 +427,7 @@ function updateBackpackUI() {
     const rarityClass = getRarityClass(fishType.probability);
     const card = document.createElement("div");
     card.className = `fish-card ${rarityClass}`;
-    card.dataset.id = fish.id; 
+    card.dataset.id = fish.id;
     card.innerHTML = `
       <img src="${fishType.image}" class="fish-icon" alt="${fish.name}">
       <div class="fish-info">
@@ -433,7 +436,7 @@ function updateBackpackUI() {
         <div class="fish-value">💰：${fish.finalPrice} G</div>
       </div>
     `;
-    handleFishCardEvents(card, fish); 
+    handleFishCardEvents(card, fish);
     grid.appendChild(card);
   }
 
@@ -445,24 +448,27 @@ const BUFF_TYPES = [
   { type: "increaseCatchRate", label: "增加上鉤率" },
   { type: "increaseRareRate", label: "增加稀有率" },
   { type: "increaseBigFishChance", label: "大體型魚機率" },
-  { type: "increaseSellValue", label: "增加販售金額" }
+  { type: "increaseSellValue", label: "增加販售金額" },
 ];
 
 const RARITY_TABLE = [
   { key: "common", label: "普通", buffCount: 1 },
   { key: "uncommon", label: "高級", buffCount: 2 },
-  { key: "rare", label: "稀有", buffCount: 3 }
+  { key: "rare", label: "稀有", buffCount: 3 },
 ];
 
 const RARITY_PROBABILITIES = [
-  { rarity: "普通", chance: 94 }, 
+  { rarity: "普通", chance: 94 },
   { rarity: "高級", chance: 5.5 },
   { rarity: "稀有", chance: 0.5 },
 ];
 const CHEST_COST = 50;
 
 document.querySelector(".shop-chest").addEventListener("click", () => {
-  const currentMoney = parseInt(localStorage.getItem("fishing-money") || "0", 10);
+  const currentMoney = parseInt(
+    localStorage.getItem("fishing-money") || "0",
+    10
+  );
 
   if (currentMoney < CHEST_COST) {
     alert("金幣不足，無法抽寶箱！");
@@ -488,11 +494,11 @@ document.querySelector(".shop-chest").addEventListener("click", () => {
         image: item.image,
         type: item.type,
         rarity: rarity.key,
-        buffs: buffs
+        buffs: buffs,
       };
 
       saveToOwnedEquipment(newEquip);
-      alert(`你獲得了：${rarity.label}「${item.name}」！`);
+      showEquipmentGetModal(newEquip);
     });
 });
 
@@ -501,44 +507,71 @@ function getRandomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-// 隨機稀有度（你可改加機率控制）
+// 隨機稀有度（可機率控制）
 function getRandomRarity() {
   const rand = Math.random() * 100;
   let sum = 0;
   for (const entry of RARITY_PROBABILITIES) {
     sum += entry.chance;
     if (rand < sum) {
-      return RARITY_TABLE.find(r => r.label === entry.rarity);
+      return RARITY_TABLE.find((r) => r.label === entry.rarity);
     }
   }
-  return RARITY_TABLE.find(r => r.label === RARITY_PROBABILITIES[RARITY_PROBABILITIES.length - 1].rarity);
+  return RARITY_TABLE.find(
+    (r) =>
+      r.label === RARITY_PROBABILITIES[RARITY_PROBABILITIES.length - 1].rarity
+  );
 }
-
-
 
 // 給對應數量 buff
 function generateBuffs(count) {
   const shuffled = [...BUFF_TYPES].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count).map(buff => ({
+  return shuffled.slice(0, count).map((buff) => ({
     type: buff.type,
     label: buff.label,
-    value: getBuffValue(buff.type)
+    value: getBuffValue(buff.type),
   }));
 }
 
 // 可根據 buff 類型定義不同範圍
 function getBuffValue(type) {
   switch (type) {
-    case "increaseCatchRate": return randomInt(1, 30);
-    case "increaseRareRate": return randomInt(1, 30);
-    case "increaseBigFishChance": return randomInt(1, 30);
-    case "increaseSellValue": return randomInt(1, 30);
-    default: return 1;
+    case "increaseCatchRate":
+      return randomInt(1, 30);
+    case "increaseRareRate":
+      return randomInt(1, 30);
+    case "increaseBigFishChance":
+      return randomInt(1, 30);
+    case "increaseSellValue":
+      return randomInt(1, 30);
+    default:
+      return 1;
   }
 }
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// 跳出卡片
+function showEquipmentGetModal(equip) {
+  const card = document.getElementById("equipmentGetCard");
+  card.innerHTML = `
+    <div class="equipment-top">
+      <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
+      <div class="equipment-name">${equip.name}</div>
+    </div>
+    <ul class="equipment-buffs">
+      ${equip.buffs
+        .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
+        .join("")}
+    </ul>
+  `;
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("equipmentGetModal")
+  );
+  modal.show();
 }
 
 // 儲存到 localStorage
@@ -568,15 +601,49 @@ function updateOwnedEquipListUI() {
       </div>
       <ul class="equipment-buffs">
         ${equip.buffs
-          .map(
-            (buff) => `<li>${buff.label} +${buff.value}%</li>`
-          )
+          .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
           .join("")}
       </ul>
     `;
 
     container.appendChild(card);
+    card.addEventListener("click", () => {
+      openEquipActionModal(equip);
+    });
   }
+}
+
+// 選取的裝備
+function openEquipActionModal(equip) {
+  const modal = new bootstrap.Modal(document.getElementById("equipActionModal"));
+  const content = document.getElementById("equipActionContent");
+
+  content.innerHTML = `
+    <div class="equipment-card">
+      <div class="equipment-top">
+        <img src="${equip.image}" class="equipment-icon" />
+        <div class="equipment-name">${equip.name}</div>
+      </div>
+      <ul class="equipment-buffs">
+        ${equip.buffs.map(b => `<li>${b.label} +${b.value}%</li>`).join("")}
+      </ul>
+    </div>
+  `;
+
+  // 你可以在這裡綁定每個按鈕功能
+  document.getElementById("equipBtn").onclick = () => {
+    console.log("裝備功能（之後實作）");
+    modal.hide();
+  };
+  document.getElementById("compareBtn").onclick = () => {
+    console.log("比較功能（之後實作）");
+    modal.hide();
+  };
+  document.getElementById("dismantleBtn").onclick = () => {
+    console.log("拆解功能（之後實作）");
+    modal.hide();
+  };
+  modal.show();
 }
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {
@@ -584,19 +651,21 @@ document.getElementById("openShop").addEventListener("click", () => {
   modal.show();
 });
 
-document.getElementById("startMultiSelect").addEventListener("click", ()=>{
+document.getElementById("startMultiSelect").addEventListener("click", () => {
   enterMultiSelectMode();
   enterSelectStyleMode();
 });
-document.getElementById("multiSellBtn").addEventListener("click", ()=>{
-  batchSellSelected()
+document.getElementById("multiSellBtn").addEventListener("click", () => {
+  batchSellSelected();
   exitMultiSelectMode();
-  exitSelectStyleMode()
+  exitSelectStyleMode();
 });
-document.getElementById("cancelMultiSelectBtn").addEventListener("click", ()=>{
-  exitMultiSelectMode();
-  exitSelectStyleMode()
-});
+document
+  .getElementById("cancelMultiSelectBtn")
+  .addEventListener("click", () => {
+    exitMultiSelectMode();
+    exitSelectStyleMode();
+  });
 document.getElementById("sortSelect").addEventListener("change", (e) => {
   currentSort = e.target.value;
   updateBackpackUI();
