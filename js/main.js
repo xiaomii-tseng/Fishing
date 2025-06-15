@@ -3,6 +3,8 @@
 const GAME_VERSION = "2.4.0"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
+const ownedEquipment = "owned-equipment-v2"
+const EQUIPPED_KEY = "equipped-items-v2";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
 let manualFishingTimeout = null;
@@ -12,7 +14,6 @@ let currentSort = "asc";
 let longPressTimer = null;
 let isMultiSelectMode = false;
 const selectedFishIds = new Set();
-const EQUIPPED_KEY = "equipped-items";
 let selectedEquippedSlot = null;
 
 // 🎣 讀取 fish.json 並開始自動釣魚
@@ -56,16 +57,16 @@ function equipItem(item) {
 }
 
 function loadOwnedEquipments() {
-  return JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  return JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
 }
 function saveOwnedEquipments(data) {
-  localStorage.setItem("owned-equipment", JSON.stringify(data));
+  localStorage.setItem(ownedEquipment, JSON.stringify(data));
 }
 function loadEquippedItems() {
-  return JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  return JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
 }
 function saveEquippedItems(data) {
-  localStorage.setItem("equipped-items", JSON.stringify(data));
+  localStorage.setItem(EQUIPPED_KEY, JSON.stringify(data));
 }
 
 // 儲存裝備
@@ -75,7 +76,7 @@ function saveEquippedItems(data) {
 
 // 穿裝備
 function updateEquippedUI() {
-  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
 
   document.querySelectorAll(".slot").forEach((slotEl) => {
     const type = slotEl.dataset.slot;
@@ -613,7 +614,7 @@ const RARITY_PROBABILITIES = [
   { rarity: "高級", chance: 5.5 },
   { rarity: "稀有", chance: 0.5 },
 ];
-const CHEST_COST = 50;
+const CHEST_COST = 3000;
 
 document.querySelector(".shop-chest").addEventListener("click", () => {
   const currentMoney = parseInt(
@@ -622,7 +623,6 @@ document.querySelector(".shop-chest").addEventListener("click", () => {
   );
 
   if (currentMoney < CHEST_COST) {
-    alert("金幣不足，無法抽寶箱！");
     return;
   }
 
@@ -727,16 +727,16 @@ function showEquipmentGetModal(equip) {
 
 // 儲存到 localStorage
 function saveToOwnedEquipment(item) {
-  const list = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  const list = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
   list.push(item);
-  localStorage.setItem("owned-equipment", JSON.stringify(list));
+  localStorage.setItem(ownedEquipment, JSON.stringify(list));
   updateOwnedEquipListUI();
 }
 function updateOwnedEquipListUI() {
   const container = document.getElementById("ownedEquipList");
   if (!container) return;
 
-  const owned = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  const owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
 
   container.innerHTML = ""; // 清空現有內容
 
@@ -803,13 +803,13 @@ function generateEquipCardHTML(equip) {
 }
 // 取得穿戴的裝備
 function getEquippedItemByType(type) {
-  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
   return equipped[type] || null;
 }
 
 // 取得裝備數值
 function updateCharacterStats() {
-  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
 
   // 初始化各屬性
   let stats = {
@@ -850,8 +850,8 @@ function updateCharacterStats() {
 document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
   if (!selectedEquippedSlot) return;
 
-  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
-  const owned = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
+  const owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
 
   const item = equipped[selectedEquippedSlot];
   if (!item) return;
@@ -861,8 +861,8 @@ document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
   owned.push(item);
 
   // 更新 localStorage
-  localStorage.setItem("equipped-items", JSON.stringify(equipped));
-  localStorage.setItem("owned-equipment", JSON.stringify(owned));
+  localStorage.setItem(EQUIPPED_KEY, JSON.stringify(equipped));
+  localStorage.setItem(ownedEquipment, JSON.stringify(owned));
 
   // 更新畫面
   updateEquippedUI();
@@ -881,7 +881,7 @@ document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
 document.querySelectorAll(".slot").forEach((slotDiv) => {
   slotDiv.addEventListener("click", () => {
     const slotKey = slotDiv.dataset.slot;
-    const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+    const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
     const item = equipped[slotKey];
 
     if (item) {
@@ -914,7 +914,7 @@ document.querySelectorAll(".slot").forEach((slotDiv) => {
 
 // buff實裝
 function getTotalBuffs() {
-  const equipped = JSON.parse(localStorage.getItem("equipped-items") || "{}");
+  const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
 
   return Object.values(equipped).reduce(
     (buffs, item) => {
@@ -986,11 +986,11 @@ document.getElementById("openEquip").addEventListener("click", () => {
 document.getElementById("dismantleBtn").addEventListener("click", () => {
   if (!selectedEquipForAction) return;
   // 取得目前裝備列表
-  let owned = JSON.parse(localStorage.getItem("owned-equipment") || "[]");
+  let owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
   // 根據 ID 過濾掉這件裝備
   owned = owned.filter((e) => e.id !== selectedEquipForAction.id);
   // 儲存回 localStorage
-  localStorage.setItem("owned-equipment", JSON.stringify(owned));
+  localStorage.setItem(ownedEquipment, JSON.stringify(owned));
   // 更新畫面
   updateOwnedEquipListUI();
   // 關閉 modal
