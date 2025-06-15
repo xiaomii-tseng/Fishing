@@ -1,6 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
-// 🐟 儲存魚資料
+const GAME_VERSION = "2.4.0"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 let backpack = loadBackpack();
@@ -934,6 +934,19 @@ function getTotalBuffs() {
     }
   );
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  const seenVersion = localStorage.getItem("seen-version");
+  if (seenVersion !== GAME_VERSION) {
+    const versionModal = new bootstrap.Modal(document.getElementById("versionModal"));
+    versionModal.show();
+
+    document.getElementById("versionConfirmBtn").addEventListener("click", () => {
+      localStorage.setItem("seen-version", GAME_VERSION);
+      versionModal.hide();
+    });
+  }
+});
 
 // 下面是 document
 document.getElementById("openShop").addEventListener("click", () => {

@@ -73,7 +73,7 @@
                 <div id="precisionIndicator" class="precision-indicator"></div>
             </div>
             <!-- 停止按鈕 -->
-            <button id="precisionStopBtn" class="precision-stop-btn heartbeat">停止</button>
+            <button id="precisionStopBtn" class="precision-stop-btn heartbeat">點擊停止</button>
         </div>
     </div>
 
@@ -254,6 +254,30 @@
             </div>
         </div>
     </div>
+
+    <!-- 版本更新 Modal -->
+    <div class="modal fade" id="versionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered info-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">版本更新資訊</h5>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        <li>商店抽寶箱可獲得裝備</li>
+                        <li>新增裝備系統與道具欄，裝備功能已上線</li>
+                        <li>販賣功能新增提示總金額</li>
+                        <br>
+                        <li class="version">版本:Ver--2.4.0</li>
+                    </ul>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button id="versionConfirmBtn">不再顯示</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="./js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
