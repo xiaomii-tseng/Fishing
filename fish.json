@@ -1,25 +1,25 @@
 [
     {
         "name": "金魚",
-        "probability": 50,
+        "probability": 60,
         "image": "images/fish/fish1.png",
         "maps": "清澈川流"
     },
     {
         "name": "鯉魚",
-        "probability": 50,
+        "probability": 65,
         "image": "images/fish/fish3.png",
         "maps": "清澈川流"
     },
     {
         "name": "神仙魚",
-        "probability": 50,
+        "probability": 65,
         "image": "images/fish/fish5.png",
         "maps": "清澈川流"
     },
     {
         "name": "吳郭魚",
-        "probability": 50,
+        "probability": 70,
         "image": "images/fish/fish14.png",
         "maps": "清澈川流"
     },
@@ -73,7 +73,7 @@
     },
     {
         "name": "秋刀魚",
-        "probability": 30,
+        "probability": 40,
         "image": "images/fish/fish27.png",
         "maps": "深海水浴"
     },
