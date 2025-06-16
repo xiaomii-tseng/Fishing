@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="./css/main.css">
     <link rel="stylesheet" href="./css/equip.css">
     <link rel="stylesheet" href="./css/shop.css">
+    <link rel="stylesheet" href="./css/book.css">
     <link rel="icon" type="image/png" href="images/icons/icon-192.png">
 
     <!-- PWA -->
@@ -59,6 +60,11 @@
             <button class="fnc-btn fnc-anm" id="openBackpack">
                 <img src="images/icons/backpack.png" alt="背包" class="icon" />
                 <div>背包</div>
+            </button>
+
+            <button class="fnc-btn fnc-anm" id="openFishBook">
+                <img src="images/icons/book.png" alt="圖鑑" class="icon" />
+                <div>圖鑑</div>
             </button>
 
             <button class="fnc-btn fnc-anm" id="openShop">
@@ -252,6 +258,30 @@
                 <h5 class="mb-3">你獲得了裝備！</h5>
                 <div id="equipmentGetCard" class="equipment-card m-auto"></div>
                 <button class="confirm-btn fnc-anm mt-4" data-bs-dismiss="modal">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📘 圖鑑 Modal -->
+    <div class="modal fade" id="fishBookModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered fish-book-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">圖鑑 <span id="fishBookProgress"></span></h5>
+                        <select id="rarityFilter" class="form-select form-select w-auto mt-1 ms-4">
+                            <option value="">全部</option>
+                            <option value="rarity-common">普通</option>
+                            <option value="rarity-uncommon">高級</option>
+                            <option value="rarity-rare">稀有</option>
+                            <option value="rarity-epic">史詩</option>
+                            <option value="rarity-mythic">神話</option>
+                            <option value="rarity-legend">傳奇</option>
+                        </select>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body fish-book-grid" id="fishBookGrid">
+                    <!-- 卡片將在這裡渲染 -->
+                </div>
             </div>
         </div>
     </div>

@@ -16,7 +16,7 @@ let isMultiSelectMode = false;
 const selectedFishIds = new Set();
 let selectedEquippedSlot = null;
 let equipInfoModal = null;
-
+const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
 
 // 🎣 讀取 fish.json 並開始自動釣魚
 fetch("fish.json")
@@ -353,10 +353,8 @@ if (openBackpackBtn) {
 
     // 新增這兩行 👇
     enterMultiSelectMode();
-    enterSelectStyleMode();
   });
 }
-
 
 // 🔁 模式切換邏輯
 const toggleBtn = document.getElementById("toggleModeBtn");
@@ -921,7 +919,6 @@ function forceCloseModal(modalId) {
   document.body.style = "";
 }
 
-
 window.addEventListener("DOMContentLoaded", () => {
   const seenVersion = localStorage.getItem("seen-version");
   if (seenVersion !== GAME_VERSION) {
@@ -939,8 +936,61 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// 魚圖鑑
+fishTypes.forEach((fishType) => {
+  const records = backpack.filter((f) => f.name === fishType.name);
+  if (records.length === 0) return;
+});
+function getDiscoveredFishNames() {
+  return [...new Set(backpack.map((f) => f.name))];
+}
+function renderFishBook() {
+  const grid = document.getElementById("fishBookGrid");
+  grid.innerHTML = "";
+
+  const discovered = getDiscoveredFishNames();
+  const total = fishTypes.length;
+  const selectedFilter = document.getElementById("rarityFilter").value;
+
+  document.getElementById("fishBookProgress").textContent = `(${discovered.length}/${total})`;
+
+  for (const fishType of fishTypes) {
+    if (!discovered.includes(fishType.name)) continue;
+
+    const rarityClass = getRarityClass(fishType.probability);
+    if (selectedFilter && rarityClass !== selectedFilter) continue;
+
+    const records = backpack.filter((f) => f.name === fishType.name);
+    const maxSize = Math.max(...records.map((f) => f.size));
+    const maxPrice = Math.max(...records.map((f) => f.finalPrice));
+    const firstCaught = records.reduce((earliest, curr) =>
+      new Date(curr.caughtAt) < new Date(earliest.caughtAt) ? curr : earliest
+    );
+
+    const card = document.createElement("div");
+    card.className = `fish-card book-card ${rarityClass}`;
+    card.innerHTML = `
+      <img src="${fishType.image}" class="fish-icon2" alt="${fishType.name}">
+      <div class="fish-info">
+        <div class="fish-name2">${fishType.name}</div>
+        <div class="fish-text">最大尺寸：${maxSize.toFixed(1)} %</div>
+        <div class="fish-text">最高售價：${maxPrice} G</div>
+        <div class="fish-text">首次釣到：${new Date(firstCaught.caughtAt).toLocaleDateString()}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+
+
 
 // 下面是 document
+document.getElementById("openFishBook").addEventListener("click", () => {
+  renderFishBook();
+  new bootstrap.Modal(document.getElementById("fishBookModal")).show();
+});
+document.getElementById("rarityFilter").addEventListener("change", renderFishBook);
 document.getElementById("openShop").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("shopModal"));
   modal.show();
