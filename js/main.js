@@ -337,7 +337,7 @@ function stopPrecisionBar() {
 // 計算魚的價值
 function assignPriceByProbability(fishList, baseValue = 60) {
   return fishList.map((fish) => {
-    const price = Math.floor(baseValue / (fish.probability / 11));
+    const price = Math.floor(baseValue / (fish.probability / 12));
     return {
       ...fish,
       price,
