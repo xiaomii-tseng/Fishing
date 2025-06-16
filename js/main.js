@@ -6,6 +6,8 @@ const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
 const EQUIPPED_KEY = "equipped-items-v2";
 const FISH_DEX_KEY = "fish-dex-v2";
+const LEVEL_KEY = "fishing-player-level-v1";
+const EXP_KEY = "fishing-player-exp-v1";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
 let manualFishingTimeout = null;
@@ -26,6 +28,7 @@ fetch("fish.json")
     fishTypes = assignPriceByProbability(normalizeFishProbabilities(data));
     updateBackpackUI();
     updateMoneyUI();
+    updateLevelUI();
     if (isAutoMode) startAutoFishing();
   })
   .catch((err) => console.error("❌ 載入魚資料失敗", err));
@@ -140,8 +143,8 @@ function getRarityClass(probability) {
   if (probability > 0.5) return "rarity-uncommon"; // 高級：藍色
   if (probability > 0.2) return "rarity-rare"; // 稀有：黃色
   if (probability > 0.1) return "rarity-epic"; // 史詩：紫色
-  if (probability > 0.05) return "rarity-mythic"; // 神話：紅色
-  return "rarity-legend"; // 傳奇：彩色邊框
+  if (probability > 0.05) return "rarity-legend"; // 神話：紅色
+  return "rarity-mythic"; // 傳奇：彩色邊框
 }
 // 🎯 精度條控制
 let precisionInterval = null;
@@ -490,9 +493,10 @@ function addFishToBackpack(fishType) {
   const fishObj = createFishInstance(fishType);
   backpack.push(fishObj);
   saveBackpack();
-  updateFishDex(fishObj); // ✅ 加上這行
+  updateFishDex(fishObj);
   updateBackpackUI();
   logCatchCard(fishObj, fishType);
+  addExp(fishObj.finalPrice);
 }
 
 // 💾 LocalStorage 儲存 & 載入
@@ -1095,6 +1099,66 @@ function getHighTierRarity() {
   }
   return RARITY_TABLE[RARITY_TABLE.length - 1]; // 預設 fallback
 }
+
+// 等級系統
+function loadLevel() {
+  return parseInt(localStorage.getItem(LEVEL_KEY) || "1", 10);
+}
+function loadExp() {
+  return parseInt(localStorage.getItem(EXP_KEY) || "0", 10);
+}
+function saveLevel(level) {
+  localStorage.setItem(LEVEL_KEY, level.toString());
+}
+function saveExp(exp) {
+  localStorage.setItem(EXP_KEY, exp.toString());
+}
+function getExpForLevel(level) {
+  return Math.floor(1000 * Math.pow(1.2, level - 1));
+}
+// 加經驗並檢查升等
+addExp(rawTotal);
+function addExp(gained) {
+  let exp = loadExp() + gained;
+  let level = loadLevel();
+  let required = getExpForLevel(level);
+
+  while (exp >= required) {
+    exp -= required;
+    level++;
+    required = getExpForLevel(level);
+    // 可選：彈窗提示升級
+    showLevelUpModal(level);
+  }
+
+  saveLevel(level);
+  saveExp(exp);
+  updateLevelUI();
+}
+function updateLevelUI() {
+  const level = loadLevel();
+  const exp = loadExp();
+  const required = getExpForLevel(level);
+  const percent = Math.floor((exp / required) * 100);
+
+  document.querySelector(".level").textContent = `等級: ${level}`;
+  document.querySelector(".exp").textContent = `經驗值: ${percent}%`;
+}
+function showLevelUpModal(level) {
+  const el = document.createElement("div");
+  el.className = "level-up-toast";
+  el.textContent = `Lv.${level} 升級了！`;
+  document.body.appendChild(el);
+
+  setTimeout(() => {
+    el.classList.add("show");
+    setTimeout(() => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 3000);
+    }, 3500);
+  }, 10);
+}
+
 
 // 下面是 document
 document.getElementById("openFishBook").addEventListener("click", () => {
