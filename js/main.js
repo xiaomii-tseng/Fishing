@@ -1,6 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.4.4"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.4.5"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
@@ -202,7 +202,7 @@ function logCatchCard(fishObj, fishType) {
   clearTimeout(bottomInfo._hideTimer);
   bottomInfo._hideTimer = setTimeout(() => {
     bottomInfo.classList.remove("show");
-  }, 5000);
+  }, 3000);
 }
 // 多選與單選的function
 function enterMultiSelectMode() {
@@ -307,7 +307,7 @@ function logCatch(message) {
     clearTimeout(bottomInfo._hideTimer);
     bottomInfo._hideTimer = setTimeout(() => {
       bottomInfo.classList.remove("show");
-    }, 5000);
+    }, 3000);
   }
 }
 document
@@ -343,7 +343,7 @@ function stopPrecisionBar() {
   if (!isAutoMode) {
     manualFishingTimeout = setTimeout(() => {
       startPrecisionBar();
-    }, 5500);
+    }, 3500);
   }
 }
 
@@ -420,7 +420,7 @@ function startAutoFishing() {
   if (autoFishingInterval) return;
 
   const loop = () => {
-    const delay = Math.random() * (30000 - 15000) + 15000;
+    const delay = Math.random() * (18000 - 10000) + 10000;
     autoFishingInterval = setTimeout(() => {
       const success = Math.random() < 0.5;
       if (success) {
