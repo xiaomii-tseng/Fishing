@@ -7,7 +7,7 @@ const urlsToCache = [
   "/manifest.json",
   "/images/icons/icon-192.png",
   "/images/icons/icon-512.png",
-  "/images/index/index3.png",
+  "/images/index/index3.jpg",
   "/images/shop/chest1.png",
   "/images/shop/chest2.png",
   "/images/index/chest2.gif"

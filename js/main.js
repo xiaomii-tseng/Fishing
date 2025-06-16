@@ -1,6 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.4.6"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.5.0"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
@@ -952,7 +952,9 @@ function renderFishBook() {
   const total = fishTypes.length;
   const selectedFilter = document.getElementById("rarityFilter").value;
 
-  document.getElementById("fishBookProgress").textContent = `(${discovered.length}/${total})`;
+  document.getElementById(
+    "fishBookProgress"
+  ).textContent = `(${discovered.length}/${total})`;
 
   for (const fishType of fishTypes) {
     if (!discovered.includes(fishType.name)) continue;
@@ -975,22 +977,23 @@ function renderFishBook() {
         <div class="fish-name2">${fishType.name}</div>
         <div class="fish-text">最大尺寸：${maxSize.toFixed(1)} %</div>
         <div class="fish-text">最高售價：${maxPrice} G</div>
-        <div class="fish-text">首次釣到：${new Date(firstCaught.caughtAt).toLocaleDateString()}</div>
+        <div class="fish-text">首次釣到：${new Date(
+          firstCaught.caughtAt
+        ).toLocaleDateString()}</div>
       </div>
     `;
     grid.appendChild(card);
   }
 }
 
-
-
-
 // 下面是 document
 document.getElementById("openFishBook").addEventListener("click", () => {
   renderFishBook();
   new bootstrap.Modal(document.getElementById("fishBookModal")).show();
 });
-document.getElementById("rarityFilter").addEventListener("change", renderFishBook);
+document
+  .getElementById("rarityFilter")
+  .addEventListener("change", renderFishBook);
 document.getElementById("openShop").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("shopModal"));
   modal.show();
@@ -1004,11 +1007,13 @@ document.getElementById("selectAllBtn").addEventListener("click", () => {
 document.getElementById("multiSellBtn").addEventListener("click", () => {
   batchSellSelected();
   exitMultiSelectMode();
+  enterMultiSelectMode();
 });
 document
   .getElementById("cancelMultiSelectBtn")
   .addEventListener("click", () => {
     exitMultiSelectMode();
+    enterMultiSelectMode();
   });
 document.getElementById("sortSelect").addEventListener("change", (e) => {
   currentSort = e.target.value;
