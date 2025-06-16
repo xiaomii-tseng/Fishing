@@ -5,6 +5,7 @@ let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
 const EQUIPPED_KEY = "equipped-items-v2";
+const FISH_DEX_KEY = "fish-dex";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
 let manualFishingTimeout = null;
@@ -489,8 +490,9 @@ function addFishToBackpack(fishType) {
   const fishObj = createFishInstance(fishType);
   backpack.push(fishObj);
   saveBackpack();
+  updateFishDex(fishObj); // ✅ 加上這行
   updateBackpackUI();
-  logCatchCard(fishObj, fishType); // 改這裡：顯示卡片
+  logCatchCard(fishObj, fishType);
 }
 
 // 💾 LocalStorage 儲存 & 載入
@@ -948,26 +950,19 @@ function renderFishBook() {
   const grid = document.getElementById("fishBookGrid");
   grid.innerHTML = "";
 
-  const discovered = getDiscoveredFishNames();
+  const dex = loadFishDex();
+  const discoveredNames = dex.map((d) => d.name);
   const total = fishTypes.length;
-  const selectedFilter = document.getElementById("rarityFilter").value;
 
   document.getElementById(
     "fishBookProgress"
-  ).textContent = `(${discovered.length}/${total})`;
+  ).textContent = `(${discoveredNames.length}/${total})`;
 
   for (const fishType of fishTypes) {
-    if (!discovered.includes(fishType.name)) continue;
+    const data = dex.find((d) => d.name === fishType.name);
+    if (!data) continue;
 
     const rarityClass = getRarityClass(fishType.probability);
-    if (selectedFilter && rarityClass !== selectedFilter) continue;
-
-    const records = backpack.filter((f) => f.name === fishType.name);
-    const maxSize = Math.max(...records.map((f) => f.size));
-    const maxPrice = Math.max(...records.map((f) => f.finalPrice));
-    const firstCaught = records.reduce((earliest, curr) =>
-      new Date(curr.caughtAt) < new Date(earliest.caughtAt) ? curr : earliest
-    );
 
     const card = document.createElement("div");
     card.className = `fish-card book-card ${rarityClass}`;
@@ -975,15 +970,44 @@ function renderFishBook() {
       <img src="${fishType.image}" class="fish-icon2" alt="${fishType.name}">
       <div class="fish-info">
         <div class="fish-name2">${fishType.name}</div>
-        <div class="fish-text">最大尺寸：${maxSize.toFixed(1)} %</div>
-        <div class="fish-text">最高售價：${maxPrice} G</div>
+        <div class="fish-text">最大尺寸：${data.maxSize.toFixed(1)} %</div>
+        <div class="fish-text">最高售價：${data.maxPrice} G</div>
         <div class="fish-text">首次釣到：${new Date(
-          firstCaught.caughtAt
+          data.firstCaught
         ).toLocaleDateString()}</div>
       </div>
     `;
     grid.appendChild(card);
   }
+}
+
+function loadFishDex() {
+  return JSON.parse(localStorage.getItem(FISH_DEX_KEY) || "[]");
+}
+function saveFishDex(dexList) {
+  localStorage.setItem(FISH_DEX_KEY, JSON.stringify(dexList));
+}
+function updateFishDex(fish) {
+  const dex = JSON.parse(localStorage.getItem("fish-dex") || "[]");
+  const existing = dex.find((d) => d.name === fish.name);
+
+  if (!existing) {
+    dex.push({
+      name: fish.name,
+      maxSize: fish.size,
+      maxPrice: fish.finalPrice,
+      firstCaught: fish.caughtAt,
+    });
+  } else {
+    existing.maxSize = Math.max(existing.maxSize, fish.size);
+    existing.maxPrice = Math.max(existing.maxPrice, fish.finalPrice);
+    existing.firstCaught =
+      new Date(fish.caughtAt) < new Date(existing.firstCaught)
+        ? fish.caughtAt
+        : existing.firstCaught;
+  }
+
+  localStorage.setItem("fish-dex", JSON.stringify(dex));
 }
 
 // 下面是 document
