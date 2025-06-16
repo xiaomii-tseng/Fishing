@@ -1,11 +1,11 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.5.1"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.5.2"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
 const EQUIPPED_KEY = "equipped-items-v2";
-const FISH_DEX_KEY = "fish-dex";
+const FISH_DEX_KEY = "fish-dex-v2";
 let backpack = loadBackpack();
 let autoFishingInterval = null;
 let manualFishingTimeout = null;
@@ -950,6 +950,8 @@ function renderFishBook() {
   const grid = document.getElementById("fishBookGrid");
   grid.innerHTML = "";
 
+  const selectedRarity =
+    document.getElementById("rarityFilter")?.value || "all";
   const dex = loadFishDex();
   const discoveredNames = dex.map((d) => d.name);
   const total = fishTypes.length;
@@ -962,10 +964,12 @@ function renderFishBook() {
     const data = dex.find((d) => d.name === fishType.name);
     if (!data) continue;
 
-    const rarityClass = getRarityClass(fishType.probability);
+    // ✨ 篩選稀有度
+    if (selectedRarity !== "all" && data.rarity !== `rarity-${selectedRarity}`)
+      continue;
 
     const card = document.createElement("div");
-    card.className = `fish-card book-card ${rarityClass}`;
+    card.className = `fish-card book-card ${data.rarity}`;
     card.innerHTML = `
       <img src="${fishType.image}" class="fish-icon2" alt="${fishType.name}">
       <div class="fish-info">
@@ -988,8 +992,12 @@ function saveFishDex(dexList) {
   localStorage.setItem(FISH_DEX_KEY, JSON.stringify(dexList));
 }
 function updateFishDex(fish) {
-  const dex = JSON.parse(localStorage.getItem("fish-dex") || "[]");
+  const dex = JSON.parse(localStorage.getItem(FISH_DEX_KEY) || "[]");
   const existing = dex.find((d) => d.name === fish.name);
+  const fishType = fishTypes.find((f) => f.name === fish.name);
+
+  const rarity = getRarityClass(fishType.probability);
+  const maps = fishType.maps || "未知";
 
   if (!existing) {
     dex.push({
@@ -997,6 +1005,8 @@ function updateFishDex(fish) {
       maxSize: fish.size,
       maxPrice: fish.finalPrice,
       firstCaught: fish.caughtAt,
+      rarity: rarity,
+      maps: maps,
     });
   } else {
     existing.maxSize = Math.max(existing.maxSize, fish.size);
@@ -1005,9 +1015,11 @@ function updateFishDex(fish) {
       new Date(fish.caughtAt) < new Date(existing.firstCaught)
         ? fish.caughtAt
         : existing.firstCaught;
+    existing.rarity = rarity; // 確保更新稀有度（若機率資料更新）
+    existing.maps = maps; // ✅ 加入/更新 maps 欄位
   }
 
-  localStorage.setItem("fish-dex", JSON.stringify(dex));
+  localStorage.setItem(FISH_DEX_KEY, JSON.stringify(dex));
 }
 
 // 下面是 document

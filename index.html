@@ -43,7 +43,7 @@
         <!-- 模式切換按鈕 -->
         <div class="mode-toggle">
             <button id="toggleModeBtn" class="mode-btn fnc-anm">點擊切換手動模式</button>
-            <div class="text-center version-info">版本 : 2.5.1</div>
+            <div class="text-center version-info">版本 : 2.5.2</div>
         </div>
         <!-- 釣魚中 -->
         <div id="fishingStatus" class="fishing-status">自動釣魚中...</div>
@@ -268,15 +268,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">圖鑑 <span id="fishBookProgress"></span></h5>
-                        <select id="rarityFilter" class="form-select form-select w-auto mt-1 ms-4">
-                            <option value="">全部</option>
-                            <option value="rarity-common">普通</option>
-                            <option value="rarity-uncommon">高級</option>
-                            <option value="rarity-rare">稀有</option>
-                            <option value="rarity-epic">史詩</option>
-                            <option value="rarity-mythic">神話</option>
-                            <option value="rarity-legend">傳奇</option>
-                        </select>
+                    <select id="rarityFilter" class="form-select form-select w-auto mt-1 ms-4">
+                        <option value="all">全部</option>
+                        <option value="common">普通</option>
+                        <option value="uncommon">高級</option>
+                        <option value="rare">稀有</option>
+                        <option value="epic">史詩</option>
+                        <option value="mythic">神話</option>
+                        <option value="legend">傳奇</option>
+                    </select>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body fish-book-grid" id="fishBookGrid">
@@ -295,6 +295,9 @@
                 </div>
                 <div class="modal-body">
                     <ul>
+                        <li class="version">版本:Ver--2.5.2</li>
+                        <li>修正圖鑑系統bug</li>
+                        <br>
                         <li class="version">版本:Ver--2.5.1</li>
                         <li>圖鑑系統上線!</li>
                         <li>修正選取bug</li>
