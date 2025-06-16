@@ -1,6 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.4.5"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.4.6"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
@@ -225,20 +225,6 @@ function updateCardSelectionUI() {
     card.classList.toggle("selected", selectedFishIds.has(id));
   });
 }
-function enterSelectStyleMode() {
-  const body = document.querySelector(".modal-body");
-  if (body) {
-    body.classList.remove("select-body");
-    body.classList.add("select-body2");
-  }
-}
-function exitSelectStyleMode() {
-  const body = document.querySelector(".modal-body");
-  if (body) {
-    body.classList.remove("select-body2");
-    body.classList.add("select-body");
-  }
-}
 // 多選與單選
 function handleFishCardEvents(cardEl, fishObj) {
   cardEl.addEventListener("click", () => {
@@ -364,8 +350,13 @@ if (openBackpackBtn) {
   openBackpackBtn.addEventListener("click", () => {
     const modal = new bootstrap.Modal(document.getElementById("backpackModal"));
     modal.show();
+
+    // 新增這兩行 👇
+    enterMultiSelectMode();
+    enterSelectStyleMode();
   });
 }
+
 
 // 🔁 模式切換邏輯
 const toggleBtn = document.getElementById("toggleModeBtn");
@@ -954,21 +945,20 @@ document.getElementById("openShop").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("shopModal"));
   modal.show();
 });
-
-document.getElementById("startMultiSelect").addEventListener("click", () => {
-  enterMultiSelectMode();
-  enterSelectStyleMode();
+document.getElementById("selectAllBtn").addEventListener("click", () => {
+  for (const fish of backpack) {
+    selectedFishIds.add(fish.id);
+  }
+  updateCardSelectionUI();
 });
 document.getElementById("multiSellBtn").addEventListener("click", () => {
   batchSellSelected();
   exitMultiSelectMode();
-  exitSelectStyleMode();
 });
 document
   .getElementById("cancelMultiSelectBtn")
   .addEventListener("click", () => {
     exitMultiSelectMode();
-    exitSelectStyleMode();
   });
 document.getElementById("sortSelect").addEventListener("change", (e) => {
   currentSort = e.target.value;

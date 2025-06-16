@@ -134,9 +134,6 @@ body {
 .select-body{
   border: 2px solid #6b4f30 ;
 }
-.select-body2{
-  border: 2px dashed gold ;
-}
 /* 魚的卡片 */
 .fish-card {
   display: flex;
