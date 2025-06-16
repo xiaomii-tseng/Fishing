@@ -471,6 +471,11 @@ body {
   z-index: 50;
 }
 
+.info-modal .modal-body{
+  height: 300px;
+  overflow-y: auto;
+}
+
 #versionConfirmBtn {
   width: 90px;
   margin-block: 10px;

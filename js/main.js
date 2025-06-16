@@ -1,6 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.5.2"; // 每次更新請手動更改版本號
+const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
 let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
@@ -1050,7 +1050,7 @@ function getHighTierBuffValue(type) {
     case "increaseBigFishChance":
       return randomInt(1, 40);
     case "increaseSellValue":
-      return randomInt(1, 15);
+      return randomInt(1, 20);
     default:
       return 1;
   }
@@ -1158,7 +1158,6 @@ function showLevelUpModal(level) {
     }, 3500);
   }, 10);
 }
-
 
 // 下面是 document
 document.getElementById("openFishBook").addEventListener("click", () => {
