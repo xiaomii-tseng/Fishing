@@ -1022,6 +1022,80 @@ function updateFishDex(fish) {
   localStorage.setItem(FISH_DEX_KEY, JSON.stringify(dex));
 }
 
+// 新增高級寶箱
+const HIGH_TIER_RARITY_PROBABILITIES = [
+  { rarity: "普通", chance: 94 },
+  { rarity: "高級", chance: 5.5 },
+  { rarity: "稀有", chance: 0.5 },
+];
+function generateHighTierBuffs(count) {
+  const shuffled = [...BUFF_TYPES].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map((buff) => ({
+    type: buff.type,
+    label: buff.label,
+    value: getHighTierBuffValue(buff.type),
+  }));
+}
+
+function getHighTierBuffValue(type) {
+  switch (type) {
+    case "increaseCatchRate":
+      return randomInt(1, 40);
+    case "increaseRareRate":
+      return randomInt(1, 60);
+    case "increaseBigFishChance":
+      return randomInt(1, 40);
+    case "increaseSellValue":
+      return randomInt(1, 15);
+    default:
+      return 1;
+  }
+}
+
+document.querySelector(".chest2").addEventListener("click", () => {
+  const currentMoney = parseInt(
+    localStorage.getItem("fishing-money") || "0",
+    10
+  );
+  const chestCost = 30000; // 高級寶箱價格，可自由調整
+
+  if (currentMoney < chestCost) return;
+
+  localStorage.setItem("fishing-money", (currentMoney - chestCost).toString());
+  updateMoneyUI();
+
+  fetch("item.json")
+    .then((res) => res.json())
+    .then((items) => {
+      const item = getRandomItem(items);
+      const rarity = getHighTierRarity(); // ✅ 高級寶箱專用稀有度機率
+      const buffs = generateHighTierBuffs(rarity.buffCount); // ✅ 高級寶箱專用 buff 數值
+
+      const newEquip = {
+        id: crypto.randomUUID(),
+        name: item.name,
+        image: item.image,
+        type: item.type,
+        rarity: rarity.key,
+        buffs: buffs,
+      };
+
+      saveToOwnedEquipment(newEquip);
+      showEquipmentGetModal(newEquip);
+    });
+});
+function getHighTierRarity() {
+  const rand = Math.random() * 100;
+  let sum = 0;
+  for (const entry of HIGH_TIER_RARITY_PROBABILITIES) {
+    sum += entry.chance;
+    if (rand < sum) {
+      return RARITY_TABLE.find((r) => r.label === entry.rarity);
+    }
+  }
+  return RARITY_TABLE[RARITY_TABLE.length - 1]; // 預設 fallback
+}
+
 // 下面是 document
 document.getElementById("openFishBook").addEventListener("click", () => {
   renderFishBook();
