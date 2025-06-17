@@ -85,19 +85,69 @@ let isMultiSelectMode = false;
 const selectedFishIds = new Set();
 let selectedEquippedSlot = null;
 let selectedEquipForAction = null;
+let currentMapKey = "map1"; // 預設地圖
 const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
+const MAP_CONFIG = {
+  map1: {
+    json: "fish.json",
+    baseValue: 600,
+    priceFormula: (prob, base) => Math.floor(base * (1 / prob)),
+    rarePenalty: 1.0,
+    catchRateModifier: 1.0, // 正常上鉤率
+    name: "清澈川流",
+    background: "images/index/index3.jpg",
+  },
+  map2: {
+    json: "fish2.json",
+    baseValue: 1000,
+    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 0.9)),
+    rarePenalty: 1.4,
+    catchRateModifier: 0.8, // 稍微難釣
+    name: "機械城河",
+    background: "images/maps/map2.jpg",
+  },
+  map3: {
+    json: "fish3.json",
+    baseValue: 1500,
+    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 0.75)),
+    rarePenalty: 2.3,
+    catchRateModifier: 0.6, // 較難上鉤
+    name: "黃金之地",
+    background: "images/maps/map3.jpg",
+  },
+};
+let currentMapConfig = MAP_CONFIG[currentMapKey];
 
 // 🎣 讀取 fish.json 並開始自動釣魚
-fetch("fish.json")
-  .then((res) => res.json())
-  .then((data) => {
-    fishTypes = assignPriceByProbability(normalizeFishProbabilities(data));
-    updateBackpackUI();
-    updateMoneyUI();
-    updateLevelUI();
-    if (isAutoMode) startAutoFishing();
-  })
-  .catch((err) => console.error("❌ 載入魚資料失敗", err));
+function switchMap(mapKey) {
+  const config = MAP_CONFIG[mapKey];
+  if (!config) return alert("無此地圖");
+
+  currentMapKey = mapKey;
+  currentMapConfig = config;
+
+  fetch(config.json)
+    .then((res) => res.json())
+    .then((data) => {
+      fishTypes = assignPriceByProbability(
+        normalizeFishProbabilities(data),
+        config
+      );
+      updateBackground(config.background);
+      document.getElementById(
+        "currentMapDisplay"
+      ).textContent = `目前地圖：${config.name}`;
+      updateBackpackUI?.();
+    });
+}
+
+window.switchMap = switchMap;
+function updateBackground(imagePath) {
+  const wrapper = document.getElementById("backgroundWrapper");
+  if (wrapper) {
+    wrapper.style.backgroundImage = `url('${imagePath}')`;
+  }
+}
 
 // 載入目前已裝備的資料
 function loadEquippedItems() {
@@ -379,7 +429,8 @@ function stopPrecisionBar() {
   const buffs = getTotalBuffs();
   const successChance =
     Math.min(50 + precisionRatio * 25) *
-    ((buffs.increaseCatchRate * 0.3 + 100) / 100);
+    ((buffs.increaseCatchRate * 0.3 + 100) / 100) *
+    currentMapConfig.catchRateModifier;
   const isSuccess = Math.random() * 100 < successChance;
 
   if (isSuccess) {
@@ -398,14 +449,11 @@ function stopPrecisionBar() {
 }
 
 // 計算魚的價值
-function assignPriceByProbability(fishList, baseValue = 60) {
-  return fishList.map((fish) => {
-    const price = Math.floor(baseValue / (fish.probability / 12));
-    return {
-      ...fish,
-      price,
-    };
-  });
+function assignPriceByProbability(fishList, mapConfig) {
+  return fishList.map((fish) => ({
+    ...fish,
+    price: mapConfig.priceFormula(fish.probability, mapConfig.baseValue),
+  }));
 }
 
 // 👜 點擊背包按鈕打開 Modal
@@ -430,7 +478,6 @@ if (fishingStatus) {
 if (toggleBtn) {
   toggleBtn.addEventListener("click", () => {
     isAutoMode = !isAutoMode;
-    updateBackgroundByMode(isAutoMode);
     toggleBtn.textContent = isAutoMode
       ? "點擊進入手動模式"
       : "點擊進入自動模式";
@@ -452,12 +499,6 @@ if (toggleBtn) {
       }, 3500);
     }
   });
-}
-// 轉場
-function updateBackgroundByMode(isAuto) {
-  const bgWrapper = document.getElementById("backgroundWrapper");
-  bgWrapper.classList.remove("auto-mode", "manual-mode");
-  bgWrapper.classList.add(isAuto ? "auto-mode" : "manual-mode");
 }
 // 關閉精度條
 function hidePrecisionBar() {
@@ -503,10 +544,14 @@ function startAutoFishing() {
 function getWeightedFishByPrecision(precisionRatio) {
   // 建立一個新的魚池，加權機率會隨 precisionRatio 提升而往稀有魚偏移
   const weightedFish = fishTypes.map((fish) => {
-    const rarityWeight = 1 / fish.probability; // 機率越低，值越高
+    const rarityWeight = 1 / fish.probability;
     const buffs = getTotalBuffs();
     const rareRateBonus = 1 + buffs.increaseRareRate / 100;
-    const bias = 1 + rarityWeight * precisionRatio * 0.1 * rareRateBonus;
+    const bias =
+      1 +
+      (rarityWeight * precisionRatio * 0.1 * rareRateBonus) /
+        currentMapConfig.rarePenalty;
+
     return {
       ...fish,
       weight: fish.probability * bias,
@@ -1228,7 +1273,17 @@ function showLevelUpModal(level) {
     }, 3500);
   }, 10);
 }
+
 // 下面是 document
+document.getElementById("openMaps").addEventListener("click", () => {
+  const functionMenu = bootstrap.Modal.getInstance(
+    document.getElementById("functionMenuModal")
+  );
+  if (functionMenu) {
+    functionMenu.hide();
+  }
+  new bootstrap.Modal(document.getElementById("mapSelectModal")).show();
+});
 document.getElementById("openFunctionMenu").addEventListener("click", () => {
   const modal = new bootstrap.Modal(
     document.getElementById("functionMenuModal")
@@ -1309,6 +1364,10 @@ document
     );
     if (modal) modal.hide();
   });
+
+window.addEventListener("DOMContentLoaded", () => {
+  switchMap("map1"); // ✅ 一進來就切換到 map1
+});
 
 // ✅ PWA 支援
 if ("serviceWorker" in navigator) {

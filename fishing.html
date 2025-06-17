@@ -59,6 +59,10 @@
         <!-- 釣魚訊息 -->
         <div id="bottomInfo" class="bottom-info"></div>
 
+        <!-- 顯示地圖 -->
+        <div id="currentMapDisplay" class="map-display">
+            目前地圖：清澈川流
+        </div>
 
         <!-- 底部功能列 -->
         <div class="bottom-menu d-flex justify-content-around">
@@ -305,10 +309,16 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body d-flex flex-column gap-2">
-                    <button class="fnc-btn fnc-anm" id="openFishBook">
-                        <img src="images/icons/book.png" alt="圖鑑" class="icon" />
-                        <div>圖鑑</div>
-                    </button>
+                    <div class="d-flex justify-content-around">
+                        <button class="fnc-btn fnc-anm" id="openFishBook">
+                            <img src="images/icons/book.png" alt="圖鑑" class="icon" />
+                            <div>圖鑑</div>
+                        </button>
+                        <button class="fnc-btn fnc-anm" id="openMaps">
+                            <img src="images/icons/map.png" alt="地圖" class="icon" />
+                            <div>地圖</div>
+                        </button>
+                    </div>
                     <button id="saveToCloudBtn" class="cloud-btn fnc-anm mt-3">雲端存檔</button>
                     <button id="logoutBtn" class="cloud-btn fnc-anm">登出</button>
 
@@ -316,6 +326,30 @@
             </div>
         </div>
     </div>
+
+    <!-- 地圖切換 Modal -->
+    <div class="modal fade" id="mapSelectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered map-modal">
+            <div class="modal-content text-white bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">選擇地圖</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-3">
+                    <button class="map-btn map-btn1" onclick="switchMap('map1')" data-bs-dismiss="modal">
+                        清澈川流
+                    </button>
+                    <button class="map-btn map-btn2" onclick="switchMap('map2')" data-bs-dismiss="modal">
+                        機械城河
+                    </button>
+                    <button class="map-btn map-btn3" onclick="switchMap('map3')" data-bs-dismiss="modal">
+                        黃金之地
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Alert Modal -->
     <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">

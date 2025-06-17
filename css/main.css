@@ -580,3 +580,54 @@ body {
 .background-wrapper.manual-mode {
   background-image: url("../images/index/index3.png");
 }
+
+.map-display {
+  position: absolute;
+  top: 70px;
+  left: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  z-index: 999;
+  text-shadow: 1px 1px 5px black;
+}
+
+.map-modal .modal-content {
+  background-image: url("../images/index/backpackbg.jpg"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 4px solid #6b4f30;
+  color: #fff;
+  width: 90%;
+  margin: auto;
+}
+
+.map-btn {
+  font-weight: bold;
+  font-size: 1.3rem;
+  padding: 10px 15px 10px 15px;
+  border-radius: 15px;
+  background-color: #d4b389;
+  color: #ffffff;
+  text-shadow: 2px 2px 5px black;
+  box-shadow: 2px 2px 0px rgb(4, 49, 60);
+  border: 2px solid #d5d5d5;
+  height: 90px;
+}
+
+.map-btn1 {
+  background-image: url("../images/maps/map1-btn.jpg"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.map-btn2 {
+  background-image: url("../images/maps/map2-btn.png"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.map-btn3 {
+  background-image: url("../images/maps/map3-btn.jpg"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+}
