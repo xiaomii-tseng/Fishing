@@ -30,6 +30,7 @@
 
     <!-- firebase -->
     <script type="module" src="./js/firebase.js"></script>
+    <script type="module" src="./js/login.js"></script>
     <script type="module" src="./js/main.js"></script>
 
 </head>
@@ -59,6 +60,10 @@
         <!-- 釣魚訊息 -->
         <div id="bottomInfo" class="bottom-info"></div>
 
+        <div class="cloud-btn">
+            <button id="saveToCloudBtn" class="btn btn-warning m-2">雲端存檔</button>
+            <button id="logoutBtn" class="btn btn-danger">登出</button>
+        </div>
         <!-- 底部功能列 -->
         <div class="bottom-menu d-flex justify-content-around">
             <button class="fnc-btn fnc-anm" id="openEquip">
@@ -80,7 +85,6 @@
                 <img src="images/icons/shop.png" alt="商店" class="icon" />
                 <div>商店</div>
             </button>
-            <button id="saveToCloudBtn" class="btn btn-warning m-2">雲端存檔</button>
         </div>
 
 

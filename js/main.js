@@ -1,21 +1,41 @@
 import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import {
   getFirestore,
   doc,
   setDoc,
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-import { app, database } from "../js/firebase.js";
-const db = getFirestore(app); // 使用同一個 app 初始化的 Firestore 實例
+import { app } from "../js/firebase.js";
+
+const auth = getAuth();
+const db = getFirestore(app);
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth)
+    .then(() => {
+      alert("已登出！");
+      window.location.href = "index.html"; // 登出後回登入頁面
+    })
+    .catch((error) => {
+      console.error("登出失敗", error);
+    });
+});
 document
   .getElementById("saveToCloudBtn")
   .addEventListener("click", async () => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
+    saveToCloud();
+  });
+function saveToCloud() {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
       alert("請先登入");
       return;
     }
 
-    // 🔸 收集所有遊戲資料
-    const data = {
+    const userId = user.uid;
+    const saveData = {
       backpack: JSON.parse(localStorage.getItem("fishing-v3-backpack") || "[]"),
       ownedEquipment: JSON.parse(
         localStorage.getItem("owned-equipment-v2") || "[]"
@@ -29,19 +49,17 @@ document
         10
       ),
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
-      money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
-      updatedAt: new Date().toISOString(),
     };
 
     try {
-      await setDoc(doc(db, "saves", userId), data);
+      await setDoc(doc(db, "saves", userId), saveData);
       alert("✅ 存檔成功！");
     } catch (err) {
       console.error("❌ 存檔失敗", err);
-      alert("存檔失敗：" + err.message);
+      alert("❌ 存檔失敗：" + err.message);
     }
   });
-
+}
 // 📁 自動釣魚遊戲主邏輯
 
 const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
