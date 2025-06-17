@@ -37,19 +37,23 @@ window.login = async function () {
     );
     localStorage.setItem("userId", userCredential.user.uid);
   } catch (err) {
-    alert("登入失敗：" + err.message);
+    showAlert("登入失敗：" + err.message);
   }
 };
 
+function showAlert(message) {
+  document.getElementById("customAlertContent").textContent = message;
+  new bootstrap.Modal(document.getElementById("customAlertModal")).show();
+}
 // ✅ 註冊
 window.register = async function () {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
   try {
     await createUserWithEmailAndPassword(auth, email, password);
-    alert("註冊成功，請重新登入");
+    showAlert("註冊成功，請重新登入");
   } catch (err) {
-    alert("註冊失敗：" + err.message);
+    showAlert("註冊失敗：" + err.message);
   }
 };
 
