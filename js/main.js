@@ -1,7 +1,7 @@
 import {
   getAuth,
   onAuthStateChanged,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import {
   getFirestore,
@@ -15,7 +15,7 @@ const db = getFirestore(app);
 document.getElementById("logoutBtn").addEventListener("click", () => {
   signOut(auth)
     .then(() => {
-      alert("已登出！");
+      showAlert("已登出！");
       window.location.href = "index.html"; // 登出後回登入頁面
     })
     .catch((error) => {
@@ -27,10 +27,14 @@ document
   .addEventListener("click", async () => {
     saveToCloud();
   });
+function showAlert(message) {
+  document.getElementById("customAlertContent").textContent = message;
+  new bootstrap.Modal(document.getElementById("customAlertModal")).show();
+}
 function saveToCloud() {
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      alert("請先登入");
+      showAlert("請先登入");
       return;
     }
 
@@ -53,10 +57,10 @@ function saveToCloud() {
 
     try {
       await setDoc(doc(db, "saves", userId), saveData);
-      alert("✅ 存檔成功！");
+      showAlert("存檔成功！");
     } catch (err) {
       console.error("❌ 存檔失敗", err);
-      alert("❌ 存檔失敗：" + err.message);
+      showAlert("存檔失敗");
     }
   });
 }
@@ -1195,7 +1199,7 @@ function updateLevelUI() {
   const level = loadLevel();
   const exp = loadExp();
   const required = getExpForLevel(level);
-  const percent = Math.floor((exp / required) * 100);
+  const percent = ((exp / required) * 100).toFixed(1);
 
   document.querySelector(".level").textContent = `等級: ${level}`;
   document.querySelector(".exp").textContent = `經驗值: ${percent}%`;
@@ -1214,9 +1218,20 @@ function showLevelUpModal(level) {
     }, 3500);
   }, 10);
 }
-
 // 下面是 document
+document.getElementById("openFunctionMenu").addEventListener("click", () => {
+  const modal = new bootstrap.Modal(
+    document.getElementById("functionMenuModal")
+  );
+  modal.show();
+});
 document.getElementById("openFishBook").addEventListener("click", () => {
+  const functionMenu = bootstrap.Modal.getInstance(
+    document.getElementById("functionMenuModal")
+  );
+  if (functionMenu) {
+    functionMenu.hide();
+  }
   renderFishBook();
   new bootstrap.Modal(document.getElementById("fishBookModal")).show();
 });

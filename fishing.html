@@ -60,10 +60,7 @@
         <!-- 釣魚訊息 -->
         <div id="bottomInfo" class="bottom-info"></div>
 
-        <div class="cloud-btn">
-            <button id="saveToCloudBtn" class="btn btn-warning m-2">雲端存檔</button>
-            <button id="logoutBtn" class="btn btn-danger">登出</button>
-        </div>
+
         <!-- 底部功能列 -->
         <div class="bottom-menu d-flex justify-content-around">
             <button class="fnc-btn fnc-anm" id="openEquip">
@@ -76,14 +73,14 @@
                 <div>背包</div>
             </button>
 
-            <button class="fnc-btn fnc-anm" id="openFishBook">
-                <img src="images/icons/book.png" alt="圖鑑" class="icon" />
-                <div>圖鑑</div>
-            </button>
-
             <button class="fnc-btn fnc-anm" id="openShop">
                 <img src="images/icons/shop.png" alt="商店" class="icon" />
                 <div>商店</div>
+            </button>
+
+            <button class="fnc-btn fnc-anm" id="openFunctionMenu">
+                <img src="images/icons/menu.png" alt="功能" class="icon" />
+                <div>功能</div>
             </button>
         </div>
 
@@ -299,6 +296,41 @@
             </div>
         </div>
     </div>
+
+    <!-- ⚙️ 功能選單 Modal -->
+    <div class="modal fade" id="functionMenuModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered menu-modal">
+            <div class="modal-content text-white bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">功能選單</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-2">
+                    <button class="fnc-btn fnc-anm" id="openFishBook">
+                        <img src="images/icons/book.png" alt="圖鑑" class="icon" />
+                        <div>圖鑑</div>
+                    </button>
+                    <button id="saveToCloudBtn" class="cloud-btn fnc-anm mt-3">雲端存檔</button>
+                    <button id="logoutBtn" class="cloud-btn fnc-anm">登出</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered alert-modal">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title">提醒</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="customAlertContent">這是一個提示訊息</div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- 版本更新 Modal -->
     <div class="modal fade" id="versionModal" tabindex="-1" aria-hidden="true">
