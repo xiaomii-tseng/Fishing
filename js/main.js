@@ -430,6 +430,7 @@ if (fishingStatus) {
 if (toggleBtn) {
   toggleBtn.addEventListener("click", () => {
     isAutoMode = !isAutoMode;
+    updateBackgroundByMode(isAutoMode);
     toggleBtn.textContent = isAutoMode
       ? "點擊進入手動模式"
       : "點擊進入自動模式";
@@ -441,13 +442,22 @@ if (toggleBtn) {
     }
     stopAutoFishing();
     clearTimeout(manualFishingTimeout);
+    hidePrecisionBar();
+
     if (isAutoMode) {
-      hidePrecisionBar();
       startAutoFishing();
     } else {
-      startPrecisionBar();
+      manualFishingTimeout = setTimeout(() => {
+        startPrecisionBar();
+      }, 3500);
     }
   });
+}
+// 轉場
+function updateBackgroundByMode(isAuto) {
+  const bgWrapper = document.getElementById("backgroundWrapper");
+  bgWrapper.classList.remove("auto-mode", "manual-mode");
+  bgWrapper.classList.add(isAuto ? "auto-mode" : "manual-mode");
 }
 // 關閉精度條
 function hidePrecisionBar() {
