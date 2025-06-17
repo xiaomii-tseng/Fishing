@@ -2,6 +2,7 @@ const CACHE_NAME = "fishing-pwa-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
+  "/fishing.html",
   "/js/main.js",
   "/css/main.css",
   "/manifest.json",

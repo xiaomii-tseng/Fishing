@@ -1,3 +1,47 @@
+import {
+  getFirestore,
+  doc,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { app, database } from "../js/firebase.js";
+const db = getFirestore(app); // 使用同一個 app 初始化的 Firestore 實例
+document
+  .getElementById("saveToCloudBtn")
+  .addEventListener("click", async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      alert("請先登入");
+      return;
+    }
+
+    // 🔸 收集所有遊戲資料
+    const data = {
+      backpack: JSON.parse(localStorage.getItem("fishing-v3-backpack") || "[]"),
+      ownedEquipment: JSON.parse(
+        localStorage.getItem("owned-equipment-v2") || "[]"
+      ),
+      equippedItems: JSON.parse(
+        localStorage.getItem("equipped-items-v2") || "{}"
+      ),
+      fishDex: JSON.parse(localStorage.getItem("fish-dex-v2") || "[]"),
+      level: parseInt(
+        localStorage.getItem("fishing-player-level-v1") || "1",
+        10
+      ),
+      exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
+      money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      await setDoc(doc(db, "saves", userId), data);
+      alert("✅ 存檔成功！");
+    } catch (err) {
+      console.error("❌ 存檔失敗", err);
+      alert("存檔失敗：" + err.message);
+    }
+  });
+
 // 📁 自動釣魚遊戲主邏輯
 
 const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
@@ -67,12 +111,6 @@ function loadOwnedEquipments() {
 }
 function saveOwnedEquipments(data) {
   localStorage.setItem(ownedEquipment, JSON.stringify(data));
-}
-function loadEquippedItems() {
-  return JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
-}
-function saveEquippedItems(data) {
-  localStorage.setItem(EQUIPPED_KEY, JSON.stringify(data));
 }
 
 // 儲存裝備
