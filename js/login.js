@@ -1,4 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -12,7 +11,7 @@ import {
   getDoc,
   setDoc
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
+import { app } from "./firebase.js";
 
 // 🔧 Firebase 設定
 const firebaseConfig = {
@@ -23,7 +22,6 @@ const firebaseConfig = {
   messagingSenderId: "883849375266",
   appId: "1:883849375266:web:2d3ad179436bf8deb5647b",
 };
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 

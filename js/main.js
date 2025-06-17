@@ -84,7 +84,7 @@ let longPressTimer = null;
 let isMultiSelectMode = false;
 const selectedFishIds = new Set();
 let selectedEquippedSlot = null;
-let equipInfoModal = null;
+let selectedEquipForAction = null;
 const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
 
 // 🎣 讀取 fish.json 並開始自動釣魚
