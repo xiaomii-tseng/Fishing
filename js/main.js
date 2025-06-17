@@ -90,28 +90,28 @@ const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
 const MAP_CONFIG = {
   map1: {
     json: "fish.json",
-    baseValue: 600,
+    baseValue: 120,
     priceFormula: (prob, base) => Math.floor(base * (1 / prob)),
     rarePenalty: 1.0,
-    catchRateModifier: 1.0, // 正常上鉤率
+    catchRateModifier: 5.0, // 正常上鉤率
     name: "清澈川流",
     background: "images/index/index3.jpg",
   },
   map2: {
     json: "fish2.json",
-    baseValue: 1000,
-    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 0.9)),
-    rarePenalty: 1.4,
-    catchRateModifier: 0.8, // 稍微難釣
+    baseValue: 600,
+    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.04)),
+    rarePenalty: 2.0,
+    catchRateModifier: 2.0, // 稍微難釣
     name: "機械城河",
     background: "images/maps/map2.jpg",
   },
   map3: {
     json: "fish3.json",
-    baseValue: 1500,
-    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 0.75)),
-    rarePenalty: 2.3,
-    catchRateModifier: 0.6, // 較難上鉤
+    baseValue: 3000,
+    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.1)),
+    rarePenalty: 3.0,
+    catchRateModifier: 2.0, // 較難上鉤
     name: "黃金之地",
     background: "images/maps/map3.jpg",
   },
@@ -1229,7 +1229,7 @@ function saveExp(exp) {
   localStorage.setItem(EXP_KEY, exp.toString());
 }
 function getExpForLevel(level) {
-  return Math.floor(17000 * Math.pow(1.05, level - 1));
+  return Math.floor(500 * Math.pow(1.1, level - 1));
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
