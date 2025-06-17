@@ -93,7 +93,7 @@ const MAP_CONFIG = {
     baseValue: 120,
     priceFormula: (prob, base) => Math.floor(base * (1 / prob)),
     rarePenalty: 1.0,
-    catchRateModifier: 5.0, // 正常上鉤率
+    catchRateModifier: 1.0, // 正常上鉤率
     name: "清澈川流",
     background: "images/index/index3.jpg",
   },
@@ -102,7 +102,7 @@ const MAP_CONFIG = {
     baseValue: 600,
     priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.04)),
     rarePenalty: 2.0,
-    catchRateModifier: 2.0, // 稍微難釣
+    catchRateModifier: 0.8, // 稍微難釣
     name: "機械城河",
     background: "images/maps/map2.jpg",
   },
@@ -111,7 +111,7 @@ const MAP_CONFIG = {
     baseValue: 3000,
     priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.1)),
     rarePenalty: 3.0,
-    catchRateModifier: 2.0, // 較難上鉤
+    catchRateModifier: 0.6, // 較難上鉤
     name: "黃金之地",
     background: "images/maps/map3.jpg",
   },
