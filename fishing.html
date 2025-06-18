@@ -253,18 +253,32 @@
                         aria-label="關閉"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="text-center mt-4 shop-title">寶箱</div>
                     <div class="d-flex justify-content-around">
                         <div>
-                            <div class="text-center">點擊寶箱抽取</div>
                             <img class="shop-chest chest1 fnc-anm" src="./images/shop/chest1.png" alt="">
                             <div class="text-center">普通寶箱</div>
                             <div class="text-center">600 G</div>
                         </div>
                         <div>
-                            <div class="text-center">點擊寶箱抽取</div>
                             <img class="shop-chest chest2 fnc-anm" src="./images/shop/chest2.png" alt="">
                             <div class="text-center">高級寶箱</div>
                             <div class="text-center">20000 G</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4 shop-title">通行證</div>
+                    <div class="d-flex justify-content-around mt-2">
+                        <div class="text-center">
+                            <img id="buyMap2Ticket" src="./images/shop/ticket1.png"
+                                class="ticket-icon shop-ticket shop-chest fnc-anm" data-map="map2" data-price="1000" />
+                            <div>機械城河通行證</div>
+                            <div>1000 G</div>
+                        </div>
+                        <div class="text-center">
+                            <img id="buyMap3Ticket" src="./images/shop/ticket2.png"
+                                class="ticket-icon shop-ticket shop-chest fnc-anm" data-map="map3" data-price="3000" />
+                            <div>黃金之地通行證</div>
+                            <div>3000 G</div>
                         </div>
                     </div>
                 </div>
@@ -357,6 +371,7 @@
         </div>
     </div>
 
+    <div id="ticketTimer"></div>
 
     <!-- Alert Modal -->
     <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">

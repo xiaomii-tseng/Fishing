@@ -82,6 +82,7 @@ function autoSaveToCloud() {
         10
       ),
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
+      money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
     };
 
     try {
@@ -130,6 +131,17 @@ const MAP_CONFIG = {
     catchRateModifier: 0.8, // 稍微難釣
     name: "機械城河",
     background: "images/maps/map2.jpg",
+    requiredLevel: 35,
+    requiredEquipNames: [
+      "金屬釣竿",
+      "金屬餌",
+      "金屬頭盔",
+      "金屬盔甲",
+      "金屬鞋",
+    ],
+    requiredTicketName: "機械通行證",
+    disableEquip: true,
+    ticketDurationMs: 60 * 60 * 1000,
   },
   map3: {
     json: "fish3.json",
@@ -139,31 +151,96 @@ const MAP_CONFIG = {
     catchRateModifier: 0.6, // 較難上鉤
     name: "黃金之地",
     background: "images/maps/map3.jpg",
+    requiredLevel: 70,
+    requiredEquipNames: ["黃金釣竿", "黃金", "黃金帽", "黃金外套", "黃金拖鞋"],
+    requiredTicketName: "黃金通行證",
+    disableEquip: true,
+    ticketDurationMs: 60 * 60 * 1000,
   },
 };
+
 let currentMapConfig = MAP_CONFIG[currentMapKey];
 
 // 🎣 讀取 fish.json 並開始自動釣魚
-function switchMap(mapKey) {
+async function switchMap(mapKey) {
   const config = MAP_CONFIG[mapKey];
-  if (!config) return alert("無此地圖");
+  if (!config) return showAlert("無此地圖");
 
+  // 等級檢查
+  const level = loadLevel();
+  if (config.requiredLevel && level < config.requiredLevel) {
+    return showAlert(`需要等級 ${config.requiredLevel} 才能進入`);
+  }
+
+  // 裝備檢查
+  const equipped = JSON.parse(
+    localStorage.getItem("equipped-items-v2") || "{}"
+  );
+  const equippedNames = Object.values(equipped).map((e) => e?.name || "");
+  if (config.requiredEquipNames) {
+    const missing = config.requiredEquipNames.filter(
+      (name) => !equippedNames.includes(name)
+    );
+    if (missing.length > 0) {
+      return showAlert(`需要穿戴：${missing.join("、")}`);
+    }
+  }
+
+  if (config.ticketDurationMs) {
+    const entryTime = parseInt(
+      localStorage.getItem(`map-entry-${mapKey}`) || "0",
+      10
+    );
+    if (entryTime > 0) {
+      const now = Date.now();
+      const elapsed = now - entryTime;
+      if (elapsed <= config.ticketDurationMs) {
+        // ✅ 在有效時間內 → 允許進入，不再要求通行證
+        proceedToMap(config, mapKey);
+        return;
+      }
+    }
+  }
+
+  // 通行證檢查 + 提示 + 移除
+  if (config.requiredTicketName) {
+    let ownedEquipments = JSON.parse(
+      localStorage.getItem("owned-equipment-v2") || "[]"
+    );
+    const index = ownedEquipments.findIndex(
+      (e) => e.name === config.requiredTicketName
+    );
+    if (index === -1) {
+      return showAlert(`缺少通行證：${config.requiredTicketName}`);
+    }
+
+    const confirm = await customConfirm(
+      `即將消耗【${config.requiredTicketName}】，是否繼續？，提醒:此地圖無法更換裝備`
+    );
+    if (!confirm) return;
+
+    // 移除通行證
+    ownedEquipments.splice(index, 1);
+    localStorage.setItem("owned-equipment-v2", JSON.stringify(ownedEquipments));
+    localStorage.setItem(`map-entry-${mapKey}`, Date.now().toString());
+  }
+
+  // ✅ 進入地圖
   currentMapKey = mapKey;
   currentMapConfig = config;
+  localStorage.setItem("disable-equip", config.disableEquip ? "1" : "0");
 
-  fetch(config.json)
-    .then((res) => res.json())
-    .then((data) => {
-      fishTypes = assignPriceByProbability(
-        normalizeFishProbabilities(data),
-        config
-      );
-      updateBackground(config.background);
-      document.getElementById(
-        "currentMapDisplay"
-      ).textContent = `目前地圖：${config.name}`;
-      updateBackpackUI?.();
-    });
+  const response = await fetch(config.json);
+  const data = await response.json();
+  fishTypes = assignPriceByProbability(
+    normalizeFishProbabilities(data),
+    config
+  );
+  updateBackground(config.background);
+  document.getElementById(
+    "currentMapDisplay"
+  ).textContent = `目前地圖：${config.name}`;
+  updateBackpackUI?.();
 }
 
 window.switchMap = switchMap;
@@ -860,7 +937,6 @@ function updateOwnedEquipListUI() {
   if (!container) return;
 
   const owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
-
   container.innerHTML = "";
 
   for (const equip of owned) {
@@ -869,35 +945,42 @@ function updateOwnedEquipListUI() {
 
     const isFav = equip.isFavorite ? "❤️" : "🤍";
 
+    // 🔧 決定 buff 顯示方式
+    const buffList = equip.buffs
+      .map((buff) => {
+        // 如果是備註型（如通行證），就只顯示 label，不顯示 +x%
+        if (buff.type === "note") return `<li>${buff.label}</li>`;
+        return `<li>${buff.label} +${buff.value}%</li>`;
+      })
+      .join("");
+
     card.innerHTML = `
       <div class="equipment-top d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
           <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
           <div class="equipment-name">${equip.name}</div>
         </div>
-        <button class="btn btn-sm btn-favorite" data-id="${
-          equip.id
-        }">${isFav}</button>
+        <button class="btn btn-sm btn-favorite" data-id="${equip.id}">${isFav}</button>
       </div>
       <ul class="equipment-buffs mt-2">
-        ${equip.buffs
-          .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
-          .join("")}
+        ${buffList}
       </ul>
     `;
 
     container.appendChild(card);
 
-    // 點整張卡片 → 打開裝備操作 modal
-    card.addEventListener("click", () => {
-      selectedEquipForAction = equip;
-      openEquipActionModal(equip);
-    });
+    // 🧭 通行證不開啟 modal（避免誤操作）
+    if (!equip.type.startsWith("ticket-")) {
+      card.addEventListener("click", () => {
+        selectedEquipForAction = equip;
+        openEquipActionModal(equip);
+      });
+    }
 
-    // 點愛心 → 收藏切換（停止冒泡避免觸發 card click）
+    // ❤️ 愛心收藏功能（仍可用）
     const favBtn = card.querySelector(".btn-favorite");
     favBtn?.addEventListener("click", (e) => {
-      e.stopPropagation(); // ✅ 避免觸發外層點擊
+      e.stopPropagation();
       toggleFavoriteEquip(equip.id);
     });
   }
@@ -930,7 +1013,13 @@ function openEquipActionModal(selectedEquip) {
   document.getElementById("currentlyEquippedCard").innerHTML = equippedCardHTML;
 
   document.getElementById("equipBtn").onclick = () => {
-    equipItem(selectedEquip); // 實作你自己的裝備邏輯
+    const isEquipLocked = localStorage.getItem("disable-equip") === "1";
+    if (isEquipLocked) {
+      showAlert("此地圖禁止更換裝備");
+      return;
+    }
+
+    equipItem(selectedEquip);
     updateCharacterStats();
     modal.hide();
   };
@@ -1012,6 +1101,11 @@ function updateCharacterStats() {
 
 // 脫下裝備
 document.querySelector(".cencel-equip-btn").addEventListener("click", () => {
+  const isEquipLocked = localStorage.getItem("disable-equip") === "1";
+  if (isEquipLocked) {
+    showAlert("此地圖禁止更換裝備");
+    return;
+  }
   if (!selectedEquippedSlot) return;
 
   const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
@@ -1116,6 +1210,7 @@ function getTotalBuffs() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  updateMoneyUI();
   const seenVersion = localStorage.getItem("seen-version");
   if (seenVersion !== GAME_VERSION) {
     const versionModal = new bootstrap.Modal(
@@ -1307,7 +1402,7 @@ function saveExp(exp) {
   localStorage.setItem(EXP_KEY, exp.toString());
 }
 function getExpForLevel(level) {
-  return Math.floor(500 * Math.pow(1.1, level - 1));
+  return Math.floor(2000 * Math.pow(1.05, level - 1));
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
@@ -1340,6 +1435,26 @@ function updateLevelUI() {
   document.querySelector(".level").textContent = `等級: ${level}`;
   document.querySelector(".exp").textContent = `經驗值: ${percent}%`;
 }
+function proceedToMap(config, mapKey) {
+  currentMapKey = mapKey;
+  currentMapConfig = config;
+  localStorage.setItem("disable-equip", config.disableEquip ? "1" : "0");
+
+  fetch(config.json)
+    .then((res) => res.json())
+    .then((data) => {
+      fishTypes = assignPriceByProbability(
+        normalizeFishProbabilities(data),
+        config
+      );
+      updateBackground(config.background);
+      document.getElementById(
+        "currentMapDisplay"
+      ).textContent = `目前地圖：${config.name}`;
+      updateBackpackUI?.();
+    });
+}
+
 function showLevelUpModal(level) {
   const el = document.createElement("div");
   el.className = "level-up-toast";
@@ -1354,6 +1469,41 @@ function showLevelUpModal(level) {
     }, 3500);
   }, 10);
 }
+// ⏱ 每10秒檢查是否超過通行證時間
+setInterval(() => {
+  const config = MAP_CONFIG[currentMapKey];
+  const timerEl = document.getElementById("ticketTimer");
+  if (!config?.ticketDurationMs || !timerEl) {
+    if (timerEl) timerEl.style.display = "none";
+    return;
+  }
+
+  const entryTime = parseInt(
+    localStorage.getItem(`map-entry-${currentMapKey}`) || "0",
+    10
+  );
+  if (!entryTime) {
+    timerEl.style.display = "none";
+    return;
+  }
+
+  const now = Date.now();
+  const remainingMs = config.ticketDurationMs - (now - entryTime);
+
+  if (remainingMs <= 0) {
+    timerEl.style.display = "none";
+    showAlert("通行證已過期，已返回清澈川流");
+    switchMap("map1");
+  } else {
+    const mins = Math.floor(remainingMs / 60000);
+    const secs = Math.floor((remainingMs % 60000) / 1000);
+    timerEl.textContent = `通行證剩餘 ${mins}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+    timerEl.style.display = "block";
+  }
+}, 1000);
+
 setInterval(() => {
   if (auth.currentUser) {
     autoSaveToCloud();
@@ -1394,7 +1544,72 @@ function customConfirm(message) {
   });
 }
 
+// 入場券
+function addTicketToInventory(ticketType) {
+  const owned = JSON.parse(localStorage.getItem("owned-equipment-v2") || "[]");
+
+  // 判斷名稱與描述
+  const isMap2 = ticketType === "ticket-map2";
+  const name = isMap2 ? "機械通行證" : "黃金通行證";
+  const buffLabel = isMap2 ? "機械城河通關所需證明" : "黃金之地通關所需證明";
+  const image = isMap2 ? "images/shop/ticket1.png" : "images/shop/ticket2.png";
+
+  const item = {
+    id: crypto.randomUUID(),
+    name: name,
+    image: image,
+    type: ticketType,
+    rarity: "common",
+    buffs: [
+      {
+        type: "note",
+        label: buffLabel,
+        value: 0,
+      },
+    ],
+    isFavorite: true,
+  };
+
+  owned.push(item);
+  localStorage.setItem("owned-equipment-v2", JSON.stringify(owned));
+  updateOwnedEquipListUI();
+  showAlert(`獲得 ${name}！`);
+}
+
 // 下面是 document
+// 加入機械城河入場券
+document.getElementById("buyMap2Ticket").addEventListener("click", () => {
+  const price = 10000;
+  const currentMoney = parseInt(
+    localStorage.getItem("fishing-money") || "0",
+    10
+  );
+
+  if (currentMoney < price) return showAlert("金錢不足！");
+  // if (hasTicketInInventory("ticket-map2"))
+  //   return showAlert("你已擁有機械城河入場券");
+
+  localStorage.setItem("fishing-money", currentMoney - price);
+  updateMoneyUI();
+  addTicketToInventory("ticket-map2");
+});
+
+// 加入黃金之地入場券
+document.getElementById("buyMap3Ticket").addEventListener("click", () => {
+  const price = 50000;
+  const currentMoney = parseInt(
+    localStorage.getItem("fishing-money") || "0",
+    10
+  );
+
+  if (currentMoney < price) return showAlert("金錢不足！");
+  // if (hasTicketInInventory("ticket-map3"))
+  //   return showAlert("你已擁有黃金之地入場券");
+
+  localStorage.setItem("fishing-money", currentMoney - price);
+  updateMoneyUI();
+  addTicketToInventory("ticket-map3");
+});
 window.addEventListener("DOMContentLoaded", () => {
   switchMap("map1"); // 原本地圖初始化
 

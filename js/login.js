@@ -83,7 +83,7 @@ onAuthStateChanged(auth, async (user) => {
       localStorage.setItem("fish-dex-v2", JSON.stringify(data.fishDex || []));
       localStorage.setItem("fishing-player-level-v1", data.level || "1");
       localStorage.setItem("fishing-player-exp-v1", data.exp || "0");
-      localStorage.setItem("fishing-money", String(data.money || "0"));
+      localStorage.setItem("fishing-money", data.money || "0");
     } else {
       // 🆕 是新帳號 → 給他一組初始資料
       const defaultSave = {
@@ -93,6 +93,7 @@ onAuthStateChanged(auth, async (user) => {
         fishDex: [],
         level: 1,
         exp: 0,
+        money: 0,
       };
       await setDoc(userRef, defaultSave);
 
@@ -105,6 +106,7 @@ onAuthStateChanged(auth, async (user) => {
         fishDex: "fish-dex-v2",
         level: "fishing-player-level-v1",
         exp: "fishing-player-exp-v1",
+        money: "fishing-money",
       };
       for (const [k, v] of Object.entries(defaultSave)) {
         localStorage.setItem(

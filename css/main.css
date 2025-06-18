@@ -533,7 +533,11 @@ body {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
-
+.shop-title {
+  color: yellow;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
 .menu-modal .modal-content {
   background-image: url("../images/index/backpackbg.jpg"); /* 可用木紋圖或純色背景 */
   background-size: cover;
@@ -593,7 +597,7 @@ body {
   text-shadow: 1px 1px 5px black;
 }
 
-.account-display{
+.account-display {
   position: absolute;
   top: 57px;
   left: 12px;
@@ -684,4 +688,17 @@ body {
 .confirm-modal .modal-footer {
   display: flex;
   justify-content: space-around;
+}
+
+#ticketTimer {
+  position: fixed;
+  left: 12px;
+  top: 100px;
+  padding: 8px 12px;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 9999;
+  display: none;
+  text-shadow: 2px 2px 5px black;
 }
