@@ -640,7 +640,11 @@ body {
   top: -10px;
   right: -13px;
 }
-
+.equipment-fav {
+  position: absolute;
+  top: -9px;
+  right: -6px;
+}
 #dismantleAllBtn {
   margin-bottom: 10px;
   margin-inline: auto;
@@ -665,7 +669,7 @@ body {
   margin: auto;
 }
 
-.confirm-modal .modal-footer{
+.confirm-modal .modal-footer {
   display: flex;
   justify-content: space-around;
 }

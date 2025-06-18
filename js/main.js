@@ -1050,16 +1050,21 @@ document.querySelectorAll(".slot").forEach((slotDiv) => {
     if (item) {
       selectedEquippedSlot = slotKey;
 
+      const isFav = item.isFavorite ? "❤️" : "🤍";
+
       const modalBody = document.getElementById("equipInfoBody");
       modalBody.innerHTML = `
         <div class="equipment-card">
-          <div class="equipment-top">
-            <img src="${item.image}" class="equipment-icon" alt="${
+          <div class="equipment-top d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <img src="${item.image}" class="equipment-icon" alt="${
         item.name
       }" />
-            <div class="equipment-name">${item.name}</div>
+              <div class="equipment-name">${item.name}</div>
+            </div>
+            <div class="equipment-fav">${isFav}</div>
           </div>
-          <ul class="equipment-buffs">
+          <ul class="equipment-buffs mt-2">
             ${item.buffs
               .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
               .join("")}
@@ -1389,9 +1394,7 @@ function customConfirm(message) {
 document
   .getElementById("dismantleAllBtn")
   .addEventListener("click", async () => {
-    const confirmed = await customConfirm(
-      "你確定要拆解所有未收藏的裝備嗎?"
-    );
+    const confirmed = await customConfirm("你確定要拆解所有未收藏的裝備嗎?");
     if (!confirmed) return;
 
     let list = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
