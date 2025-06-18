@@ -733,7 +733,7 @@ const RARITY_PROBABILITIES = [
   { rarity: "高級", chance: 5.5 },
   { rarity: "稀有", chance: 0.5 },
 ];
-const CHEST_COST = 3000;
+const CHEST_COST = 600;
 
 document.querySelector(".shop-chest").addEventListener("click", () => {
   const currentMoney = parseInt(
@@ -1250,7 +1250,7 @@ document.querySelector(".chest2").addEventListener("click", () => {
     localStorage.getItem("fishing-money") || "0",
     10
   );
-  const chestCost = 30000; // 高級寶箱價格，可自由調整
+  const chestCost = 20000; // 高級寶箱價格，可自由調整
 
   if (currentMoney < chestCost) return;
 
