@@ -146,7 +146,7 @@
         </div>
     </div>
 
-    <!-- 裝備 Modal -->
+    <!-- 角色 Modal -->
     <div class="modal fade" id="equipModal" tabindex="-1" aria-labelledby="equipModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content equip-modal">
@@ -183,6 +183,7 @@
                         <!-- 動態加入 -->
                     </div>
                 </div>
+                <button id="dismantleAllBtn" class="btn btn-danger mt-3">全部拆解</button>
             </div>
         </div>
     </div>
@@ -364,6 +365,26 @@
             </div>
         </div>
     </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered confirm-modal">
+            <div class="modal-content text-white bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">請確認</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="customConfirmMessage">
+                    你確定要執行這個操作嗎？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="sell-btn fnc-anm" id="customConfirmOK">確定</button>
+                    <button type="button" class="sell-btn fnc-anm" id="customConfirmCancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     <!-- 版本更新 Modal -->

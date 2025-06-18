@@ -765,6 +765,7 @@ document.querySelector(".shop-chest").addEventListener("click", () => {
         type: item.type,
         rarity: rarity.key,
         buffs: buffs,
+        isFavorite: false,
       };
 
       saveToOwnedEquipment(newEquip);
@@ -859,19 +860,25 @@ function updateOwnedEquipListUI() {
 
   const owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
 
-  container.innerHTML = ""; // 清空現有內容
+  container.innerHTML = "";
 
   for (const equip of owned) {
     const card = document.createElement("div");
     card.className = "equipment-card";
 
-    // 裝備卡片結構
+    const isFav = equip.isFavorite ? "❤️" : "🤍";
+
     card.innerHTML = `
-      <div class="equipment-top">
-        <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
-        <div class="equipment-name">${equip.name}</div>
+      <div class="equipment-top d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
+          <div class="equipment-name">${equip.name}</div>
+        </div>
+        <button class="btn btn-sm btn-favorite" data-id="${
+          equip.id
+        }">${isFav}</button>
       </div>
-      <ul class="equipment-buffs">
+      <ul class="equipment-buffs mt-2">
         ${equip.buffs
           .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
           .join("")}
@@ -879,10 +886,30 @@ function updateOwnedEquipListUI() {
     `;
 
     container.appendChild(card);
+
+    // 點整張卡片 → 打開裝備操作 modal
     card.addEventListener("click", () => {
       selectedEquipForAction = equip;
       openEquipActionModal(equip);
     });
+
+    // 點愛心 → 收藏切換（停止冒泡避免觸發 card click）
+    const favBtn = card.querySelector(".btn-favorite");
+    favBtn?.addEventListener("click", (e) => {
+      e.stopPropagation(); // ✅ 避免觸發外層點擊
+      toggleFavoriteEquip(equip.id);
+    });
+  }
+}
+
+// 愛心
+function toggleFavoriteEquip(id) {
+  const list = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
+  const target = list.find((e) => e.id === id);
+  if (target) {
+    target.isFavorite = !target.isFavorite;
+    localStorage.setItem(ownedEquipment, JSON.stringify(list));
+    updateOwnedEquipListUI();
   }
 }
 
@@ -910,11 +937,18 @@ function openEquipActionModal(selectedEquip) {
   modal.show();
 }
 function generateEquipCardHTML(equip) {
+  const isFav = equip.isFavorite ? "❤️" : "🤍";
+
   return `
     <div class="equipment-card">
-      <div class="equipment-top d-flex align-items-center gap-2">
-        <img src="${equip.image}" class="equipment-icon" />
-        <div class="equipment-name">${equip.name}</div>
+      <div class="equipment-top d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <img src="${equip.image}" class="equipment-icon" />
+          <div class="equipment-name">${equip.name}</div>
+        </div>
+        <button class="btn btn-sm btn-favorite" data-id="${equip.id}">
+          ${isFav}
+        </button>
       </div>
       <ul class="equipment-buffs mt-2">
         ${equip.buffs.map((b) => `<li>${b.label} +${b.value}%</li>`).join("")}
@@ -922,6 +956,7 @@ function generateEquipCardHTML(equip) {
     </div>
   `;
 }
+
 // 取得穿戴的裝備
 function getEquippedItemByType(type) {
   const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
@@ -1231,6 +1266,7 @@ document.querySelector(".chest2").addEventListener("click", () => {
         type: item.type,
         rarity: rarity.key,
         buffs: buffs,
+        isFavorite: false,
       };
 
       saveToOwnedEquipment(newEquip);
@@ -1318,7 +1354,56 @@ setInterval(() => {
 const level = loadLevel();
 const levelBuff = level * 0.25;
 
+function customConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = new bootstrap.Modal(
+      document.getElementById("customConfirmModal")
+    );
+    document.getElementById("customConfirmMessage").textContent = message;
+
+    const okBtn = document.getElementById("customConfirmOK");
+    const cancelBtn = document.getElementById("customConfirmCancel");
+
+    const cleanup = () => {
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+    };
+
+    okBtn.onclick = () => {
+      cleanup();
+      modal.hide();
+      resolve(true);
+    };
+
+    cancelBtn.onclick = () => {
+      cleanup();
+      modal.hide();
+      resolve(false);
+    };
+
+    modal.show();
+  });
+}
+
 // 下面是 document
+document
+  .getElementById("dismantleAllBtn")
+  .addEventListener("click", async () => {
+    const confirmed = await customConfirm(
+      "你確定要拆解所有未收藏的裝備嗎?"
+    );
+    if (!confirmed) return;
+
+    let list = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
+    const beforeCount = list.length;
+    list = list.filter((e) => e.isFavorite);
+
+    const removed = beforeCount - list.length;
+    localStorage.setItem(ownedEquipment, JSON.stringify(list));
+    updateOwnedEquipListUI();
+    showAlert(`已拆解 ${removed} 件裝備`);
+  });
+
 document.getElementById("openMaps").addEventListener("click", () => {
   const functionMenu = bootstrap.Modal.getInstance(
     document.getElementById("functionMenuModal")
@@ -1384,6 +1469,10 @@ document.getElementById("openEquip").addEventListener("click", () => {
 });
 document.getElementById("dismantleBtn").addEventListener("click", () => {
   if (!selectedEquipForAction) return;
+  if (selectedEquipForAction.isFavorite) {
+    showAlert("此裝備已收藏");
+    return;
+  }
   // 取得目前裝備列表
   let owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
   // 根據 ID 過濾掉這件裝備
