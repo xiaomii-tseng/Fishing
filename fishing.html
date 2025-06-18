@@ -303,7 +303,19 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">圖鑑 <span id="fishBookProgress"></span></h5>
-                    <select id="rarityFilter" class="form-select form-select w-auto mt-1 ms-4">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body fish-book-grid" id="fishBookGrid">
+                    <!-- 卡片將在這裡渲染 -->
+                </div>
+                <div class="select-list">
+                    <select id="mapFilter" class="form-select form-select-sm w-auto">
+                        <option value="all">全部地圖</option>
+                        <option value="map1">清澈川流</option>
+                        <option value="map2">機械城河</option>
+                        <option value="map3">黃金之地</option>
+                    </select>
+                    <select id="rarityFilter" class="form-select form-select-sm w-auto">
                         <option value="all">全部</option>
                         <option value="common">普通</option>
                         <option value="uncommon">高級</option>
@@ -312,10 +324,6 @@
                         <option value="legend">傳奇</option>
                         <option value="mythic">神話</option>
                     </select>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body fish-book-grid" id="fishBookGrid">
-                    <!-- 卡片將在這裡渲染 -->
                 </div>
             </div>
         </div>

@@ -22,6 +22,7 @@ let selectedEquipForAction = null;
 let currentMapKey = "map1"; // 預設地圖
 const chestCost = 10000; // 高級寶箱
 const CHEST_COST = 1500; // 普通寶箱
+let allFishTypes = [];
 
 import {
   getAuth,
@@ -114,6 +115,33 @@ function autoSaveToCloud() {
       await setDoc(doc(db, "saves", userId), saveData);
     } catch (err) {}
   });
+}
+
+// 更新圖鑑數量
+async function loadAllFishTypes() {
+  const mapKeys = Object.keys(MAP_CONFIG);
+  const fishMap = new Map();
+
+  for (const key of mapKeys) {
+    const config = MAP_CONFIG[key];
+    const res = await fetch(config.json);
+    const data = await res.json();
+    const processed = assignPriceByProbability(
+      normalizeFishProbabilities(data),
+      config
+    );
+
+    for (const fish of processed) {
+      if (!fishMap.has(fish.name)) {
+        fishMap.set(fish.name, { ...fish, maps: [config.name] });
+      } else {
+        const existing = fishMap.get(fish.name);
+        existing.maps.push(config.name);
+      }
+    }
+  }
+
+  allFishTypes = Array.from(fishMap.values());
 }
 
 const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
@@ -1244,21 +1272,26 @@ function renderFishBook() {
 
   const selectedRarity =
     document.getElementById("rarityFilter")?.value || "all";
+  const selectedMap = document.getElementById("mapFilter")?.value || "all";
   const dex = loadFishDex();
   const discoveredNames = dex.map((d) => d.name);
-  const total = fishTypes.length;
+  const total = allFishTypes.length;
 
   document.getElementById(
     "fishBookProgress"
   ).textContent = `(${discoveredNames.length}/${total})`;
 
-  for (const fishType of fishTypes) {
+  for (const fishType of allFishTypes) {
     const data = dex.find((d) => d.name === fishType.name);
     if (!data) continue;
 
-    // ✨ 篩選稀有度
-    if (selectedRarity !== "all" && data.rarity !== `rarity-${selectedRarity}`)
-      continue;
+    const matchesRarity =
+      selectedRarity === "all" || data.rarity === `rarity-${selectedRarity}`;
+    const matchesMap =
+      selectedMap === "all" ||
+      (fishType.maps || []).includes(MAP_CONFIG[selectedMap].name);
+
+    if (!matchesRarity || !matchesMap) continue;
 
     const card = document.createElement("div");
     card.className = `fish-card book-card ${data.rarity}`;
@@ -1271,6 +1304,9 @@ function renderFishBook() {
         <div class="fish-text">首次釣到：${new Date(
           data.firstCaught
         ).toLocaleDateString()}</div>
+        <div class="fish-text">出沒地圖：${(fishType.maps || []).join(
+          "、"
+        )}</div>
       </div>
     `;
     grid.appendChild(card);
@@ -1671,6 +1707,7 @@ document.getElementById("openFishBook").addEventListener("click", () => {
 document
   .getElementById("rarityFilter")
   .addEventListener("change", renderFishBook);
+document.getElementById("mapFilter").addEventListener("change", renderFishBook);
 document.getElementById("openShop").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("shopModal"));
   modal.show();
@@ -1737,8 +1774,9 @@ document
     if (modal) modal.hide();
   });
 
-window.addEventListener("DOMContentLoaded", () => {
-  switchMap("map1"); // ✅ 一進來就切換到 map1
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadAllFishTypes(); // 先載入所有魚種
+  switchMap("map1");
 });
 
 // ✅ PWA 支援
