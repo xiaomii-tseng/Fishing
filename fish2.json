@@ -139,58 +139,124 @@
     },
 
     {
-        "name": "機械鯉魚",
-        "probability": 1.4,
+        "name": "重甲蟹",
+        "probability": 0.036,
         "image": "images/fish2/fish56.png",
         "maps": "深海水浴"
     },
     {
-        "name": "章魚",
-        "probability": 1.5,
+        "name": "紫母",
+        "probability": 0.41,
         "image": "images/fish2/fish57.png",
         "maps": "深海水浴"
     },
     {
-        "name": "海馬王",
-        "probability": 0.2,
+        "name": "青鋼魚",
+        "probability": 0.83,
         "image": "images/fish2/fish58.png",
         "maps": "深海水浴"
     },
     {
-        "name": "海馬",
-        "probability": 1.2,
+        "name": "氫化魟",
+        "probability": 0.42,
         "image": "images/fish2/fish59.png",
         "maps": "深海水浴"
     },
     {
-        "name": "飛魚",
-        "probability": 2.3,
+        "name": "氫氣魚",
+        "probability": 0.33,
         "image": "images/fish2/fish60.png",
         "maps": "深海水浴"
     },
     {
-        "name": "深海鯊",
-        "probability": 0.27,
+        "name": "戰旗",
+        "probability": 0.027,
         "image": "images/fish2/fish61.png",
         "maps": "深海水浴"
     },
     {
-        "name": "鯨魚",
+        "name": "硫化甲魚",
         "probability": 0.085,
         "image": "images/fish2/fish62.png",
         "maps": "深海水浴"
     },
 
     {
-        "name": "水母",
+        "name": "噬人魚",
         "probability": 0.41,
         "image": "images/fish2/fish63.png",
         "maps": "深海水浴"
     },
     {
-        "name": "魟魚",
-        "probability": 0.32,
+        "name": "滄藍魷魚",
+        "probability": 1,
         "image": "images/fish2/fish64.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "偵測魷",
+        "probability": 0.24,
+        "image": "images/fish2/fish65.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "潛魟",
+        "probability": 0.05,
+        "image": "images/fish2/fish66.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "機蟹魚",
+        "probability": 0.016,
+        "image": "images/fish2/fish67.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "古代聖魚",
+        "probability": 0.005,
+        "image": "images/fish2/fish68.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "氫鯊",
+        "probability": 0.067,
+        "image": "images/fish2/fish69.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "綠甲魚",
+        "probability": 38,
+        "image": "images/fish2/fish70.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "吊梭",
+        "probability": 0.41,
+        "image": "images/fish2/fish71.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "魚章",
+        "probability": 0.063,
+        "image": "images/fish2/fish72.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "接地鯊",
+        "probability": 0.013,
+        "image": "images/fish2/fish73.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "翅甲蟹",
+        "probability": 2.5,
+        "image": "images/fish2/fish74.png",
+        "maps": "深海水浴"
+    },
+    {
+        "name": "氫甲魚",
+        "probability": 32,
+        "image": "images/fish2/fish75.png",
         "maps": "深海水浴"
     }
 ]
