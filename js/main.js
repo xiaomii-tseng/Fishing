@@ -64,6 +64,30 @@ function saveToCloud() {
     }
   });
 }
+function autoSaveToCloud() {
+  onAuthStateChanged(auth, async (user) => {
+    const userId = user.uid;
+    const saveData = {
+      backpack: JSON.parse(localStorage.getItem("fishing-v3-backpack") || "[]"),
+      ownedEquipment: JSON.parse(
+        localStorage.getItem("owned-equipment-v2") || "[]"
+      ),
+      equippedItems: JSON.parse(
+        localStorage.getItem("equipped-items-v2") || "{}"
+      ),
+      fishDex: JSON.parse(localStorage.getItem("fish-dex-v2") || "[]"),
+      level: parseInt(
+        localStorage.getItem("fishing-player-level-v1") || "1",
+        10
+      ),
+      exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
+    };
+
+    try {
+      await setDoc(doc(db, "saves", userId), saveData);
+    } catch (err) {}
+  });
+}
 // 📁 自動釣魚遊戲主邏輯
 
 const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
@@ -260,17 +284,21 @@ function getRarityClass(probability) {
 let precisionInterval = null;
 let pos = 0;
 let direction = 1;
-const speed = 6;
+const speed = 5;
 const intervalTime = 16;
+
 function startPrecisionBar() {
   if (precisionInterval) return;
-  pos = 0;
-  direction = 1;
   document.getElementById("precisionBarContainer").style.display = "flex";
   const track = document.getElementById("precisionTrack");
   const indicator = document.getElementById("precisionIndicator");
   const trackWidth = track.clientWidth;
   const indicatorWidth = indicator.clientWidth;
+
+  // 隨機起始位置與方向 👇
+  pos = Math.floor(Math.random() * (trackWidth - indicatorWidth));
+  direction = Math.random() < 0.5 ? 1 : -1;
+
   precisionInterval = setInterval(() => {
     pos += speed * direction;
     if (pos >= trackWidth - indicatorWidth) {
@@ -1273,7 +1301,11 @@ function showLevelUpModal(level) {
     }, 3500);
   }, 10);
 }
-
+setInterval(() => {
+  if (auth.currentUser) {
+    autoSaveToCloud();
+  }
+}, 30000);
 // 下面是 document
 document.getElementById("openMaps").addEventListener("click", () => {
   const functionMenu = bootstrap.Modal.getInstance(
