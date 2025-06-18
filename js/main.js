@@ -1,3 +1,28 @@
+// 📁 自動釣魚遊戲主邏輯
+
+const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
+let fishTypes = [];
+const STORAGE_KEY = "fishing-v3-backpack";
+const ownedEquipment = "owned-equipment-v2";
+const EQUIPPED_KEY = "equipped-items-v2";
+const FISH_DEX_KEY = "fish-dex-v2";
+const LEVEL_KEY = "fishing-player-level-v1";
+const EXP_KEY = "fishing-player-exp-v1";
+let backpack = loadBackpack();
+let autoFishingInterval = null;
+let manualFishingTimeout = null;
+let isAutoMode = true;
+let money = loadMoney();
+let currentSort = "asc";
+let longPressTimer = null;
+let isMultiSelectMode = false;
+const selectedFishIds = new Set();
+let selectedEquippedSlot = null;
+let selectedEquipForAction = null;
+let currentMapKey = "map1"; // 預設地圖
+const chestCost = 10000; // 高級寶箱
+const CHEST_COST = 1500; // 普通寶箱
+
 import {
   getAuth,
   onAuthStateChanged,
@@ -90,28 +115,7 @@ function autoSaveToCloud() {
     } catch (err) {}
   });
 }
-// 📁 自動釣魚遊戲主邏輯
 
-const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
-let fishTypes = [];
-const STORAGE_KEY = "fishing-v3-backpack";
-const ownedEquipment = "owned-equipment-v2";
-const EQUIPPED_KEY = "equipped-items-v2";
-const FISH_DEX_KEY = "fish-dex-v2";
-const LEVEL_KEY = "fishing-player-level-v1";
-const EXP_KEY = "fishing-player-exp-v1";
-let backpack = loadBackpack();
-let autoFishingInterval = null;
-let manualFishingTimeout = null;
-let isAutoMode = true;
-let money = loadMoney();
-let currentSort = "asc";
-let longPressTimer = null;
-let isMultiSelectMode = false;
-const selectedFishIds = new Set();
-let selectedEquippedSlot = null;
-let selectedEquipForAction = null;
-let currentMapKey = "map1"; // 預設地圖
 const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
 const MAP_CONFIG = {
   map1: {
@@ -811,7 +815,6 @@ const RARITY_PROBABILITIES = [
   { rarity: "高級", chance: 5.5 },
   { rarity: "稀有", chance: 0.5 },
 ];
-const CHEST_COST = 600;
 
 document.querySelector(".shop-chest").addEventListener("click", () => {
   const currentMoney = parseInt(
@@ -1348,7 +1351,6 @@ document.querySelector(".chest2").addEventListener("click", () => {
     localStorage.getItem("fishing-money") || "0",
     10
   );
-  const chestCost = 20000; // 高級寶箱價格，可自由調整
 
   if (currentMoney < chestCost) return;
 
