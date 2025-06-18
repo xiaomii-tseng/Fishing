@@ -698,7 +698,7 @@ body {
   color: #fff;
   border-radius: 6px;
   font-size: 14px;
-  z-index: 9999;
+  z-index: 20;
   display: none;
   text-shadow: 2px 2px 5px black;
 }
