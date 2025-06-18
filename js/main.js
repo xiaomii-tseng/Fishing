@@ -719,6 +719,7 @@ const BUFF_TYPES = [
   { type: "increaseRareRate", label: "增加稀有率" },
   { type: "increaseBigFishChance", label: "大體型魚機率" },
   { type: "increaseSellValue", label: "增加販售金額" },
+  { type: "increaseExpGain", label: "經驗獲得加成" },
 ];
 
 const RARITY_TABLE = [
@@ -813,6 +814,8 @@ function getBuffValue(type) {
       return randomInt(1, 20);
     case "increaseSellValue":
       return randomInt(1, 7);
+    case "increaseExpGain":
+      return randomInt(1, 6);
     default:
       return 1;
   }
@@ -935,6 +938,7 @@ function updateCharacterStats() {
     increaseRareRate: 0,
     increaseBigFishChance: 0,
     increaseSellValue: 0,
+    increaseExpGain: 0,
   };
 
   // 累加各裝備的 buff
@@ -950,18 +954,22 @@ function updateCharacterStats() {
   }
 
   // 更新畫面
-  document.querySelector(
-    ".increase-catch-rate"
-  ).textContent = `增加上鉤率：${stats.increaseCatchRate}%`;
-  document.querySelector(
-    ".increase-rare-rate"
-  ).textContent = `增加稀有率：${stats.increaseRareRate}%`;
+  // 顯示裝備 + 等級加成
+  document.querySelector(".increase-catch-rate").textContent = `增加上鉤率：${
+    stats.increaseCatchRate + levelBuff
+  }%`;
+  document.querySelector(".increase-rare-rate").textContent = `增加稀有率：${
+    stats.increaseRareRate + levelBuff
+  }%`;
   document.querySelector(
     ".increase-big-fish-chance"
-  ).textContent = `大體型機率：${stats.increaseBigFishChance}%`;
-  document.querySelector(
-    ".increase-sellValue"
-  ).textContent = `增加販售金額：${stats.increaseSellValue}%`;
+  ).textContent = `大體型機率：${stats.increaseBigFishChance + levelBuff}%`;
+  document.querySelector(".increase-sellValue").textContent = `增加販售金額：${
+    stats.increaseSellValue + levelBuff
+  }%`;
+  document.querySelector(".increase-exp-gain").textContent = `經驗值加成：${
+    stats.increaseExpGain + levelBuff
+  }%`;
 }
 
 // 脫下裝備
@@ -1036,36 +1044,32 @@ document.querySelectorAll(".slot").forEach((slotDiv) => {
 function getTotalBuffs() {
   const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
 
-  return Object.values(equipped).reduce(
-    (buffs, item) => {
-      if (!item.buffs) return buffs;
-      for (const buff of item.buffs) {
-        if (buffs.hasOwnProperty(buff.type)) {
-          buffs[buff.type] += buff.value;
-        }
-      }
-      return buffs;
-    },
-    {
-      increaseCatchRate: 0,
-      increaseRareRate: 0,
-      increaseBigFishChance: 0,
-      increaseSellValue: 0,
-    }
-  );
-}
+  const buffs = {
+    increaseCatchRate: 0,
+    increaseRareRate: 0,
+    increaseBigFishChance: 0,
+    increaseSellValue: 0,
+    increaseExpGain: 0, // ✅ 新增
+  };
 
-function forceCloseModal(modalId) {
-  const modalEl = document.getElementById(modalId);
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) {
-    modal.hide();
+  for (const item of Object.values(equipped)) {
+    if (!item?.buffs) continue;
+    for (const buff of item.buffs) {
+      if (buffs.hasOwnProperty(buff.type)) {
+        buffs[buff.type] += buff.value;
+      }
+    }
   }
 
-  // 清理 backdrop 防卡死
-  document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
-  document.body.classList.remove("modal-open");
-  document.body.style = "";
+  // ✅ 加入等級加成
+  const level = loadLevel();
+  const levelBuff = level * 0.25;
+  for (const key in buffs) {
+    buffs[key] += levelBuff;
+    buffs[key] = Math.round(buffs[key] * 10) / 10;
+  }
+  buffs.increaseCatchRate = Math.min(buffs.increaseCatchRate, 99);
+  return buffs;
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -1194,6 +1198,8 @@ function getHighTierBuffValue(type) {
       return randomInt(1, 40);
     case "increaseSellValue":
       return randomInt(1, 20);
+    case "increaseExpGain":
+      return randomInt(1, 12);
     default:
       return 1;
   }
@@ -1262,7 +1268,9 @@ function getExpForLevel(level) {
 // 加經驗並檢查升等
 addExp(rawTotal);
 function addExp(gained) {
-  let exp = loadExp() + gained;
+  const buffs = getTotalBuffs();
+  const expBonus = Math.floor(gained * (buffs.increaseExpGain / 100));
+  let exp = loadExp() + gained + expBonus;
   let level = loadLevel();
   let required = getExpForLevel(level);
 
@@ -1306,6 +1314,10 @@ setInterval(() => {
     autoSaveToCloud();
   }
 }, 30000);
+// 等級加成
+const level = loadLevel();
+const levelBuff = level * 0.25;
+
 // 下面是 document
 document.getElementById("openMaps").addEventListener("click", () => {
   const functionMenu = bootstrap.Modal.getInstance(
