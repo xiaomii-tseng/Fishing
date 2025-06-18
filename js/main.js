@@ -53,6 +53,7 @@ function saveToCloud() {
         10
       ),
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
+      money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
     };
 
     try {
