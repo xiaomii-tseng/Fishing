@@ -968,7 +968,6 @@ function getEquippedItemByType(type) {
 function updateCharacterStats() {
   const equipped = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || "{}");
 
-  // 初始化各屬性
   let stats = {
     increaseCatchRate: 0,
     increaseRareRate: 0,
@@ -977,7 +976,6 @@ function updateCharacterStats() {
     increaseExpGain: 0,
   };
 
-  // 累加各裝備的 buff
   for (const slot in equipped) {
     const item = equipped[slot];
     if (!item || !item.buffs) continue;
@@ -989,23 +987,27 @@ function updateCharacterStats() {
     }
   }
 
-  // 更新畫面
-  // 顯示裝備 + 等級加成
-  document.querySelector(".increase-catch-rate").textContent = `增加上鉤率：${
+  // ✅ 動態取得最新等級加成
+  const level = loadLevel();
+  const levelBuff = level * 0.25;
+
+  document.querySelector(".increase-catch-rate").textContent = `增加上鉤率：${(
     stats.increaseCatchRate + levelBuff
-  }%`;
-  document.querySelector(".increase-rare-rate").textContent = `增加稀有率：${
+  ).toFixed(2)}%`;
+  document.querySelector(".increase-rare-rate").textContent = `增加稀有率：${(
     stats.increaseRareRate + levelBuff
-  }%`;
+  ).toFixed(2)}%`;
   document.querySelector(
     ".increase-big-fish-chance"
-  ).textContent = `大體型機率：${stats.increaseBigFishChance + levelBuff}%`;
-  document.querySelector(".increase-sellValue").textContent = `增加販售金額：${
+  ).textContent = `大體型機率：${(
+    stats.increaseBigFishChance + levelBuff
+  ).toFixed(2)}%`;
+  document.querySelector(".increase-sellValue").textContent = `增加販售金額：${(
     stats.increaseSellValue + levelBuff
-  }%`;
-  document.querySelector(".increase-exp-gain").textContent = `經驗值加成：${
+  ).toFixed(2)}%`;
+  document.querySelector(".increase-exp-gain").textContent = `經驗值加成：${(
     stats.increaseExpGain + levelBuff
-  }%`;
+  ).toFixed(2)}%`;
 }
 
 // 脫下裝備
@@ -1322,6 +1324,7 @@ function addExp(gained) {
     required = getExpForLevel(level);
     // 可選：彈窗提示升級
     showLevelUpModal(level);
+    updateCharacterStats();
   }
 
   saveLevel(level);
@@ -1357,8 +1360,8 @@ setInterval(() => {
   }
 }, 30000);
 // 等級加成
-const level = loadLevel();
-const levelBuff = level * 0.25;
+// const level = loadLevel();
+// const levelBuff = level * 0.25;
 
 function customConfirm(message) {
   return new Promise((resolve) => {
