@@ -1392,6 +1392,21 @@ function customConfirm(message) {
 }
 
 // 下面是 document
+window.addEventListener("DOMContentLoaded", () => {
+  switchMap("map1"); // 原本地圖初始化
+
+  const auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (user && user.email) {
+      const username = user.email.split("@")[0]; // ✨ 取 @ 前的部分
+      const el = document.getElementById("accountDisplay");
+      if (el) {
+        el.textContent = `目前帳號：${username}`;
+      }
+    }
+  });
+});
+
 document
   .getElementById("dismantleAllBtn")
   .addEventListener("click", async () => {

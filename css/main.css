@@ -583,7 +583,19 @@ body {
 
 .map-display {
   position: absolute;
-  top: 70px;
+  top: 80px;
+  left: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  z-index: 999;
+  text-shadow: 1px 1px 5px black;
+}
+
+.account-display{
+  position: absolute;
+  top: 57px;
   left: 12px;
   padding: 6px 12px;
   border-radius: 8px;
