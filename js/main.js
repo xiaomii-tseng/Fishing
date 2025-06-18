@@ -1579,7 +1579,7 @@ function addTicketToInventory(ticketType) {
 // 下面是 document
 // 加入機械城河入場券
 document.getElementById("buyMap2Ticket").addEventListener("click", () => {
-  const price = 10000;
+  const price = 15000;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
@@ -1596,7 +1596,7 @@ document.getElementById("buyMap2Ticket").addEventListener("click", () => {
 
 // 加入黃金之地入場券
 document.getElementById("buyMap3Ticket").addEventListener("click", () => {
-  const price = 50000;
+  const price = 70000;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
