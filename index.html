@@ -100,7 +100,8 @@
             align-items: center;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         }
-        .loading-text{
+
+        .loading-text {
             margin-top: 10px;
         }
 
@@ -134,8 +135,8 @@
     </div>
     <div class="login-box login-box-none">
         <div class="title">登入你的釣魚帳號</div>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="密碼">
+        <input type="email" id="email" autocomplete="off" placeholder="Email">
+        <input type="password" id="password" placeholder="密碼" autocomplete="new-password" name="new-password">
         <div class="font-ts">密碼最少要6位數</div>
         <button id="loginBtn">登入</button>
         <button id="registerBtn">註冊</button>

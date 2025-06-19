@@ -1,7 +1,6 @@
 // 📁 自動釣魚遊戲主邏輯
 
 const GAME_VERSION = "2.6.0"; // 每次更新請手動更改版本號
-let fishTypes = [];
 const STORAGE_KEY = "fishing-v3-backpack";
 const ownedEquipment = "owned-equipment-v2";
 const EQUIPPED_KEY = "equipped-items-v2";
@@ -9,19 +8,21 @@ const FISH_DEX_KEY = "fish-dex-v2";
 const LEVEL_KEY = "fishing-player-level-v1";
 const EXP_KEY = "fishing-player-exp-v1";
 let backpack = loadBackpack();
-let autoFishingInterval = null;
-let manualFishingTimeout = null;
-let isAutoMode = true;
 let money = loadMoney();
-let currentSort = "asc";
-let longPressTimer = null;
-let isMultiSelectMode = false;
-const selectedFishIds = new Set();
+let autoFishingInterval = null;
 let selectedEquippedSlot = null;
 let selectedEquipForAction = null;
+let manualFishingTimeout = null;
+let isAutoMode = true;
+let isMultiSelectMode = false;
+let currentSort = "asc";
 let currentMapKey = "map1"; // 預設地圖
-const chestCost = 10000; // 高級寶箱
+const chestCost = 15000; // 高級寶箱
 const CHEST_COST = 1500; // 普通寶箱
+const ticket1Price = 35000;
+const ticket2Price = 150000;
+const selectedFishIds = new Set();
+let fishTypes = [];
 let allFishTypes = [];
 
 import {
@@ -187,7 +188,7 @@ const MAP_CONFIG = {
     requiredEquipNames: ["黃金釣竿", "黃金", "黃金帽", "黃金外套", "黃金拖鞋"],
     requiredTicketName: "黃金通行證",
     disableEquip: true,
-    ticketDurationMs: 60 * 60 * 1000,
+    ticketDurationMs: 30 * 60 * 1000,
   },
 };
 
@@ -1240,24 +1241,6 @@ function getTotalBuffs() {
   return buffs;
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  updateMoneyUI();
-  const seenVersion = localStorage.getItem("seen-version");
-  if (seenVersion !== GAME_VERSION) {
-    const versionModal = new bootstrap.Modal(
-      document.getElementById("versionModal")
-    );
-    versionModal.show();
-
-    document
-      .getElementById("versionConfirmBtn")
-      .addEventListener("click", () => {
-        localStorage.setItem("seen-version", GAME_VERSION);
-        versionModal.hide();
-      });
-  }
-});
-
 // 魚圖鑑
 fishTypes.forEach((fishType) => {
   const records = backpack.filter((f) => f.name === fishType.name);
@@ -1547,9 +1530,6 @@ setInterval(() => {
     autoSaveToCloud();
   }
 }, 30000);
-// 等級加成
-// const level = loadLevel();
-// const levelBuff = level * 0.25;
 
 function customConfirm(message) {
   return new Promise((resolve) => {
@@ -1617,7 +1597,7 @@ function addTicketToInventory(ticketType) {
 // 下面是 document
 // 加入機械城河入場券
 document.getElementById("buyMap2Ticket").addEventListener("click", () => {
-  const price = 35000;
+  const price = ticket1Price;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
@@ -1634,7 +1614,7 @@ document.getElementById("buyMap2Ticket").addEventListener("click", () => {
 
 // 加入黃金之地入場券
 document.getElementById("buyMap3Ticket").addEventListener("click", () => {
-  const price = 120000;
+  const price = ticket2Price;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
@@ -1647,20 +1627,6 @@ document.getElementById("buyMap3Ticket").addEventListener("click", () => {
   localStorage.setItem("fishing-money", currentMoney - price);
   updateMoneyUI();
   addTicketToInventory("ticket-map3");
-});
-window.addEventListener("DOMContentLoaded", () => {
-  switchMap("map1"); // 原本地圖初始化
-
-  const auth = getAuth();
-  onAuthStateChanged(auth, (user) => {
-    if (user && user.email) {
-      const username = user.email.split("@")[0]; // ✨ 取 @ 前的部分
-      const el = document.getElementById("accountDisplay");
-      if (el) {
-        el.textContent = `目前帳號：${username}`;
-      }
-    }
-  });
 });
 
 document
@@ -1773,10 +1739,42 @@ document
     );
     if (modal) modal.hide();
   });
-
 window.addEventListener("DOMContentLoaded", async () => {
-  await loadAllFishTypes(); // 先載入所有魚種
+  updateMoneyUI();
+
+  // ✅ 顯示版本資訊 Modal（若沒看過）
+  const seenVersion = localStorage.getItem("seen-version");
+  if (seenVersion !== GAME_VERSION) {
+    const versionModal = new bootstrap.Modal(
+      document.getElementById("versionModal")
+    );
+    versionModal.show();
+
+    document
+      .getElementById("versionConfirmBtn")
+      .addEventListener("click", () => {
+        localStorage.setItem("seen-version", GAME_VERSION);
+        versionModal.hide();
+      });
+  }
+
+  // ✅ 載入所有魚種（供圖鑑使用）
+  await loadAllFishTypes();
+
+  // ✅ 初始化地圖
   switchMap("map1");
+
+  // ✅ 顯示登入帳號資訊
+  const auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (user && user.email) {
+      const username = user.email.split("@")[0];
+      const el = document.getElementById("accountDisplay");
+      if (el) {
+        el.textContent = `目前帳號：${username}`;
+      }
+    }
+  });
 });
 
 // ✅ PWA 支援
