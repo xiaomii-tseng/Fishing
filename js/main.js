@@ -178,7 +178,7 @@ function autoSaveToCloud() {
       ),
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
       money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
-      name: username, 
+      name: username,
     };
 
     try {
@@ -243,7 +243,7 @@ const MAP_CONFIG = {
     ],
     requiredTicketName: "機械通行證",
     disableEquip: true,
-    ticketDurationMs: 1 * 60 * 1000,
+    ticketDurationMs: 30 * 60 * 1000,
   },
   map3: {
     json: "fish3.json",
@@ -502,7 +502,7 @@ function logCatchCard(fishObj, fishType) {
 
   if (fishType && fishObj) {
     const card = document.createElement("div");
-    card.className = "fish-card";
+    card.className = "fish-card big-card";
 
     // 🪄 加上稀有度 class
     const rarityClass = getRarityClass(fishType.probability);
@@ -518,7 +518,7 @@ function logCatchCard(fishObj, fishType) {
     `;
     bottomInfo.appendChild(card);
   } else {
-    bottomInfo.textContent = "魚跑掉了...";
+    bottomInfo.innerHTML = `<div class="fish-escape">魚跑掉了...</div>`;
   }
 
   clearTimeout(bottomInfo._hideTimer);
