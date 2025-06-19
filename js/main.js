@@ -801,7 +801,7 @@ function updateBackpackUI() {
 
   // 🔁 建立卡片（用排序後的 entries）
   for (const fish of entries) {
-    const fishType = fishTypes.find((f) => f.name === fish.name);
+    const fishType = allFishTypes.find((f) => f.name === fish.name);
     if (!fishType) continue;
 
     const rarityClass = getRarityClass(fishType.probability);
