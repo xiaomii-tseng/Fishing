@@ -173,7 +173,7 @@ const MAP_CONFIG = {
     ],
     requiredTicketName: "機械通行證",
     disableEquip: true,
-    ticketDurationMs: 60 * 60 * 1000,
+    ticketDurationMs: 30 * 60 * 1000,
   },
   map3: {
     json: "fish3.json",
@@ -1617,7 +1617,7 @@ function addTicketToInventory(ticketType) {
 // 下面是 document
 // 加入機械城河入場券
 document.getElementById("buyMap2Ticket").addEventListener("click", () => {
-  const price = 15000;
+  const price = 35000;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
@@ -1634,7 +1634,7 @@ document.getElementById("buyMap2Ticket").addEventListener("click", () => {
 
 // 加入黃金之地入場券
 document.getElementById("buyMap3Ticket").addEventListener("click", () => {
-  const price = 70000;
+  const price = 120000;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
