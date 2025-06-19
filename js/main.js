@@ -174,7 +174,7 @@ const MAP_CONFIG = {
     ],
     requiredTicketName: "機械通行證",
     disableEquip: true,
-    ticketDurationMs: 30 * 60 * 1000,
+    ticketDurationMs: 1 * 60 * 1000,
   },
   map3: {
     json: "fish3.json",
@@ -1423,7 +1423,7 @@ function saveExp(exp) {
   localStorage.setItem(EXP_KEY, exp.toString());
 }
 function getExpForLevel(level) {
-  return Math.floor(2000 * Math.pow(1.05, level - 1));
+  return Math.floor(2000 * Math.pow(1.07, level - 1));
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
