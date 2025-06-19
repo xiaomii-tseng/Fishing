@@ -34,11 +34,74 @@ import {
   getFirestore,
   doc,
   setDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  collection,
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-import { app } from "../js/firebase.js";
+import { app } from "./firebase.js";
 
 const auth = getAuth();
 const db = getFirestore(app);
+async function getTopPlayersByLevel(limitCount = 10) {
+  const q = query(
+    collection(db, "saves"),
+    orderBy("level", "desc"),
+    limit(limitCount)
+  );
+  const querySnapshot = await getDocs(q);
+  const result = [];
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    result.push({
+      uid: doc.id,
+      name: data.name || "匿名", // 👈 加這行
+      level: data.level || 1,
+      money: data.money || 0,
+      exp: data.exp || 0,
+    });
+  });
+  return result;
+}
+
+async function showLeaderboard() {
+  const topPlayers = await getTopPlayersByLevel();
+  const container = document.getElementById("leaderboardContent");
+  container.innerHTML = topPlayers
+    .map(
+      (p, i) => `
+    <div>${i + 1}. ${p.name} | Lv.${
+        p.level
+      } | 💰 ${p.money.toLocaleString()} G</div>
+  `
+    )
+    .join("");
+  new bootstrap.Modal(document.getElementById("leaderboardModal")).show();
+}
+
+document
+  .getElementById("openLeaderboard")
+  .addEventListener("click", async () => {
+    const functionMenu = bootstrap.Modal.getInstance(
+      document.getElementById("functionMenuModal")
+    );
+    if (functionMenu) functionMenu.hide();
+
+    const topPlayers = await getTopPlayersByLevel(); // ← 你前面提供的 function
+    const content = document.getElementById("leaderboardContent");
+    content.innerHTML = topPlayers
+      .map(
+        (p, i) => `
+          <div>${i + 1}. ${p.name} | Lv.${
+          p.level
+        } | 💰 ${p.money.toLocaleString()} G</div>
+          `
+      )
+      .join("");
+
+    new bootstrap.Modal(document.getElementById("leaderboardModal")).show();
+  });
 document.getElementById("logoutBtn").addEventListener("click", () => {
   signOut(auth)
     .then(() => {
@@ -66,6 +129,7 @@ function saveToCloud() {
     }
 
     const userId = user.uid;
+    const username = user.email.split("@")[0]; // 👈 取 email 前綴
     const saveData = {
       backpack: JSON.parse(localStorage.getItem("fishing-v3-backpack") || "[]"),
       ownedEquipment: JSON.parse(
@@ -81,6 +145,7 @@ function saveToCloud() {
       ),
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
       money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
+      name: username, // ✅ 存帳號名稱
     };
 
     try {
@@ -92,9 +157,12 @@ function saveToCloud() {
     }
   });
 }
+
 function autoSaveToCloud() {
   onAuthStateChanged(auth, async (user) => {
     const userId = user.uid;
+    const username = user.email.split("@")[0]; // ← 補這行！
+
     const saveData = {
       backpack: JSON.parse(localStorage.getItem("fishing-v3-backpack") || "[]"),
       ownedEquipment: JSON.parse(
@@ -110,6 +178,7 @@ function autoSaveToCloud() {
       ),
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
       money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
+      name: username, 
     };
 
     try {
@@ -182,7 +251,7 @@ const MAP_CONFIG = {
     priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.1)),
     rarePenalty: 3.0,
     catchRateModifier: 0.75, // 較難上鉤
-    name: "黃金之地",
+    name: "黃金遺址",
     background: "images/maps/map3.jpg",
     requiredLevel: 70,
     requiredEquipNames: ["黃金釣竿", "黃金", "黃金帽", "黃金外套", "黃金拖鞋"],
@@ -1569,7 +1638,7 @@ function addTicketToInventory(ticketType) {
   // 判斷名稱與描述
   const isMap2 = ticketType === "ticket-map2";
   const name = isMap2 ? "機械通行證" : "黃金通行證";
-  const buffLabel = isMap2 ? "機械城河通關所需證明" : "黃金之地通關所需證明";
+  const buffLabel = isMap2 ? "機械城河通關所需證明" : "黃金遺址通關所需證明";
   const image = isMap2 ? "images/shop/ticket1.png" : "images/shop/ticket2.png";
 
   const item = {
@@ -1612,7 +1681,7 @@ document.getElementById("buyMap2Ticket").addEventListener("click", () => {
   addTicketToInventory("ticket-map2");
 });
 
-// 加入黃金之地入場券
+// 加入黃金遺址入場券
 document.getElementById("buyMap3Ticket").addEventListener("click", () => {
   const price = ticket2Price;
   const currentMoney = parseInt(
@@ -1622,7 +1691,7 @@ document.getElementById("buyMap3Ticket").addEventListener("click", () => {
 
   if (currentMoney < price) return showAlert("金錢不足！");
   // if (hasTicketInInventory("ticket-map3"))
-  //   return showAlert("你已擁有黃金之地入場券");
+  //   return showAlert("你已擁有黃金遺址入場券");
 
   localStorage.setItem("fishing-money", currentMoney - price);
   updateMoneyUI();
