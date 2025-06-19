@@ -731,3 +731,18 @@ body {
   width: 70%;
   margin: auto;
 }
+
+.bgm-btn {
+    position: fixed;
+    top: 120px;
+    right: 2px;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1;
+}
+.bgm-btn img {
+    width: 32px;
+    height: 32px;
+}

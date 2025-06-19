@@ -24,6 +24,8 @@ const ticket2Price = 150000;
 const selectedFishIds = new Set();
 let fishTypes = [];
 let allFishTypes = [];
+let currentBgm = null;
+let isMuted = false;
 
 import {
   getAuth,
@@ -224,6 +226,7 @@ const MAP_CONFIG = {
     catchRateModifier: 1.0, // 正常上鉤率
     name: "清澈川流",
     background: "images/index/index3.jpg",
+    music: "sound/map1.mp3",
   },
   map2: {
     json: "fish2.json",
@@ -244,6 +247,7 @@ const MAP_CONFIG = {
     requiredTicketName: "機械通行證",
     disableEquip: true,
     ticketDurationMs: 30 * 60 * 1000,
+    music: "sound/map1.mp3",
   },
   map3: {
     json: "fish3.json",
@@ -258,6 +262,7 @@ const MAP_CONFIG = {
     requiredTicketName: "黃金通行證",
     disableEquip: true,
     ticketDurationMs: 30 * 60 * 1000,
+    music: "sound/map2.wav",
   },
 };
 
@@ -343,6 +348,12 @@ async function switchMap(mapKey) {
     "currentMapDisplay"
   ).textContent = `目前地圖：${config.name}`;
   updateBackpackUI?.();
+  // 清除原本音樂（不自動播放）
+  if (currentBgm) {
+    currentBgm.pause();
+    currentBgm = null;
+    playMapMusic(config.music);
+  }
 }
 
 window.switchMap = switchMap;
@@ -1542,6 +1553,7 @@ function proceedToMap(config, mapKey) {
         "currentMapDisplay"
       ).textContent = `目前地圖：${config.name}`;
       updateBackpackUI?.();
+      playMapMusic(config.music);
     });
 }
 
@@ -1662,8 +1674,38 @@ function addTicketToInventory(ticketType) {
   updateOwnedEquipListUI();
   showAlert(`獲得 ${name}！`);
 }
+// 音樂
+function playMapMusic(musicPath) {
+  if (currentBgm) {
+    currentBgm.pause();
+    currentBgm.currentTime = 0;
+  }
+
+  currentBgm = new Audio(musicPath);
+  currentBgm.loop = true;
+  currentBgm.volume = 0.5;
+  currentBgm.muted = isMuted;
+  currentBgm.play().catch((e) => {
+    console.warn("音樂播放失敗：", e);
+  });
+}
 
 // 下面是 document
+document.getElementById("bgmToggleBtn").addEventListener("click", () => {
+  isMuted = !isMuted;
+
+  if (currentBgm) {
+    // ✅ 已有音樂 → 只切換靜音狀態
+    currentBgm.muted = isMuted;
+  } else if (currentMapConfig?.music) {
+    // ✅ 第一次播放 → 建立音樂並播放
+    playMapMusic(currentMapConfig.music);
+  }
+
+  const icon = document.getElementById("bgmIcon");
+  icon.src = isMuted ? "images/icons/voice2.png" : "images/icons/voice.png";
+});
+
 // 加入機械城河入場券
 document.getElementById("buyMap2Ticket").addEventListener("click", () => {
   const price = ticket1Price;
