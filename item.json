@@ -118,40 +118,5 @@
         "probability": 5,
         "image": "images/equip/shoes3.png",
         "type": "shoes"
-    },
-    {
-        "name": "天神釣竿",
-        "type": "rod",
-        "image": "images/items/rod5.png",
-        "rarity": "rare",
-        "buffs": []
-    },
-    {
-        "name": "天神餌",
-        "type": "bait",
-        "image": "images/items/bait5.png",
-        "rarity": "rare",
-        "buffs": []
-    },
-    {
-        "name": "天神盔",
-        "type": "hat",
-        "image": "images/items/hat5.png",
-        "rarity": "rare",
-        "buffs": []
-    },
-    {
-        "name": "天神鎧",
-        "type": "outfit",
-        "image": "images/items/outfit5.png",
-        "rarity": "rare",
-        "buffs": []
-    },
-    {
-        "name": "天神靴",
-        "type": "shoes",
-        "image": "images/items/shoes5.png",
-        "rarity": "rare",
-        "buffs": []
     }
 ]

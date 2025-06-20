@@ -2033,22 +2033,22 @@ function getEquipDisplayName(equip) {
 function openDivineModal(equip) {
   selectedEquipForAction = equip;
 
-  const materials = loadDivineMaterials();
   const reqs = {
     隕石碎片: { count: 3, icon: "images/icons/ore2.png" },
     黃銅礦: { count: 3, icon: "images/icons/ore3.png" },
     核廢料: { count: 3, icon: "images/icons/ore4.png" },
   };
 
+  // ✅ 用即時資料顯示 UI
   const listHtml = Object.entries(reqs)
     .map(([name, { count, icon }]) => {
-      const owned = materials[name] || 0;
+      const owned = loadDivineMaterials()[name] || 0;
       return `
-      <div class="d-flex align-items-center gap-2 mb-1">
-        <img src="${icon}" width="30" height="30" alt="${name}" />
-        <span class="god-name">${name}：${owned}/${count}</span>
-      </div>
-    `;
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <img src="${icon}" width="30" height="30" alt="${name}" />
+          <span class="god-name">${name}：${owned}/${count}</span>
+        </div>
+      `;
     })
     .join("");
 
@@ -2060,12 +2060,20 @@ function openDivineModal(equip) {
   modal.show();
 
   document.getElementById("confirmDivineBtn").onclick = async () => {
+    const freshMaterials = loadDivineMaterials();
+
     const allEnough = Object.entries(reqs).every(
-      ([name, need]) => (materials[name] || 0) >= need
+      ([name, { count }]) => (freshMaterials[name] || 0) >= count
     );
     if (!allEnough) return showAlert("材料不足，無法神化");
 
-    // 對照表：原始名稱 → 神裝名稱
+    // ✅ 扣材料
+    for (const [name, { count }] of Object.entries(reqs)) {
+      freshMaterials[name] -= count;
+    }
+    saveDivineMaterials(freshMaterials);
+
+    // ✅ 對照表：原始名稱 → 神裝名稱
     const convertMap = {
       普通釣竿: "天神釣竿",
       蚯蚓: "天神餌",
@@ -2092,20 +2100,13 @@ function openDivineModal(equip) {
     const newName = convertMap[equip.name];
     if (!newName) return showAlert("此裝備無法神化");
 
-    // 讀取 item.json 裡面的神裝資料
-    const res = await fetch("item.json");
+    // ✅ 從 item.json 讀神裝資料
+    const res = await fetch("god.json");
     const itemList = await res.json();
     const divineTemplate = itemList.find((i) => i.name === newName);
-
     if (!divineTemplate) return showAlert(`找不到神化裝備資料：${newName}`);
 
-    // 扣材料
-    for (const [name, need] of Object.entries(reqs)) {
-      materials[name] -= need;
-    }
-    saveDivineMaterials(materials);
-
-    // 建立新裝備：用神裝模板，但保留 refineLevel 和 buffs
+    // ✅ 建立神化裝備
     const newEquip = {
       ...divineTemplate,
       id: crypto.randomUUID(),
@@ -2114,7 +2115,7 @@ function openDivineModal(equip) {
       isFavorite: equip.isFavorite ?? false,
     };
 
-    // 替換裝備
+    // ✅ 替換裝備
     let owned = loadOwnedEquipments();
     owned = owned.filter((e) => e.id !== equip.id);
     owned.push(newEquip);
