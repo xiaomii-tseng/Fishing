@@ -796,12 +796,12 @@ function startAutoFishing() {
     if (!isAutoFishing) return;
 
     triggerAutoFishing();
-    const delay = 15000 + Math.random() * 5000;
+    const delay = 17000 + Math.random() * 6000;
     autoFishingIntervalId = setTimeout(autoFish, delay);
   }
 
   // ✅ 延遲第一次觸發，避免切地圖馬上釣
-  const initialDelay = 15000 + Math.random() * 5000;
+  const initialDelay = 17000 + Math.random() * 6000;
   autoFishingIntervalId = setTimeout(autoFish, initialDelay);
 }
 
