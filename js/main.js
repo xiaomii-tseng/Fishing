@@ -29,6 +29,8 @@ let allFishTypes = [];
 let currentBgm = null;
 let isMuted = false;
 let userHasInteractedWithBgm = false;
+let autoFishingIntervalId = null;
+let isAutoFishing = false;
 const buffLabelMap = {
   increaseCatchRate: "增加上鉤率",
   increaseRareRate: "增加稀有率",
@@ -237,6 +239,7 @@ const MAP_CONFIG = {
     name: "清澈川流",
     background: "images/index/index3.jpg",
     music: "sound/map1.mp3",
+    autoFishingAllowed: true,
   },
   map4: {
     json: "fish4.json",
@@ -258,6 +261,7 @@ const MAP_CONFIG = {
     disableEquip: true,
     ticketDurationMs: 30 * 60 * 1000,
     music: "sound/map1.mp3",
+    autoFishingAllowed: true,
   },
   map2: {
     json: "fish2.json",
@@ -279,6 +283,7 @@ const MAP_CONFIG = {
     disableEquip: true,
     ticketDurationMs: 30 * 60 * 1000,
     music: "sound/map1.mp3",
+    autoFishingAllowed: true,
   },
   map3: {
     json: "fish3.json",
@@ -294,6 +299,7 @@ const MAP_CONFIG = {
     disableEquip: true,
     ticketDurationMs: 30 * 60 * 1000,
     music: "sound/map2.wav",
+    autoFishingAllowed: true,
   },
 };
 
@@ -384,6 +390,10 @@ async function switchMap(mapKey) {
     currentBgm.pause();
     currentBgm = null;
     playMapMusic(config.music);
+  }
+  stopAutoFishing(); // 避免殘留計時器
+  if (config.autoFishingAllowed) {
+    startAutoFishing();
   }
 }
 
@@ -768,26 +778,40 @@ function addClickBounce(el) {
     { once: true }
   );
 }
-
+function triggerAutoFishing() {
+  const fishType = getRandomFish();
+  if (!fishType) {
+    logCatch("沒釣到魚...");
+    return;
+  }
+  addFishToBackpack(fishType);
+}
 // ⏳ 自動釣魚主迴圈
 function startAutoFishing() {
-  if (autoFishingInterval) return;
+  if (autoFishingIntervalId !== null) return;
 
-  const loop = () => {
-    const delay = Math.random() * (18000 - 10000) + 10000;
-    autoFishingInterval = setTimeout(() => {
-      const success = Math.random() < 0.5;
-      if (success) {
-        const fishType = getRandomFish();
-        addFishToBackpack(fishType);
-      } else {
-        logCatch("魚跑掉了...");
-      }
-      loop();
-    }, delay);
-  };
+  isAutoFishing = true;
 
-  loop();
+  function autoFish() {
+    if (!isAutoFishing) return;
+
+    triggerAutoFishing();
+    const delay = 15000 + Math.random() * 5000;
+    autoFishingIntervalId = setTimeout(autoFish, delay);
+  }
+
+  // ✅ 延遲第一次觸發，避免切地圖馬上釣
+  const initialDelay = 15000 + Math.random() * 5000;
+  autoFishingIntervalId = setTimeout(autoFish, initialDelay);
+}
+
+function stopAutoFishing() {
+  isAutoFishing = false;
+
+  if (autoFishingIntervalId !== null) {
+    clearTimeout(autoFishingIntervalId);
+    autoFishingIntervalId = null;
+  }
 }
 
 // 手動釣魚增加稀有度
@@ -815,11 +839,6 @@ function getWeightedFishByPrecision(precisionRatio) {
     sum += f.weight;
     if (rand < sum) return f;
   }
-}
-
-function stopAutoFishing() {
-  clearTimeout(autoFishingInterval);
-  autoFishingInterval = null;
 }
 
 // 🎯 機率抽魚
