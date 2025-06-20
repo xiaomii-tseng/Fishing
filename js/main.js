@@ -236,7 +236,6 @@ async function loadAllFishTypes() {
   allFishTypes = Array.from(fishMap.values());
 }
 
-const caughtFishNames = [...new Set(backpack.map((f) => f.name))];
 const MAP_CONFIG = {
   map1: {
     json: "fish.json",
@@ -329,7 +328,12 @@ async function switchMap(mapKey) {
     localStorage.getItem("equipped-items-v2") || "{}"
   );
   const equippedNames = Object.values(equipped).map((e) => e?.name || "");
-  if (config.requiredEquipNames) {
+  // 允許穿滿天神裝備就免檢查
+  const isFullDivineSet = Object.values(equipped).every((e) =>
+    e?.name?.startsWith("天神")
+  );
+
+  if (config.requiredEquipNames && !isFullDivineSet) {
     const missing = config.requiredEquipNames.filter(
       (name) => !equippedNames.includes(name)
     );
@@ -1841,7 +1845,7 @@ function openRefineChoiceModal(equip) {
 
   document.getElementById("refineDivineBtn").onclick = () => {
     modal.hide();
-    showAlert("神化系統尚未開放"); // 你可以先預留
+    openDivineModal(equip);
   };
 }
 // 打開鍛造
@@ -2023,6 +2027,106 @@ function patchLegacyEquipments() {
 function getEquipDisplayName(equip) {
   const level = equip.refineLevel ?? 0;
   return level > 0 ? `${equip.name} +${level}` : equip.name;
+}
+
+// 神化功能
+function openDivineModal(equip) {
+  selectedEquipForAction = equip;
+
+  const materials = loadDivineMaterials();
+  const reqs = {
+    隕石碎片: { count: 3, icon: "images/icons/ore2.png" },
+    黃銅礦: { count: 3, icon: "images/icons/ore3.png" },
+    核廢料: { count: 3, icon: "images/icons/ore4.png" },
+  };
+
+  const listHtml = Object.entries(reqs)
+    .map(([name, { count, icon }]) => {
+      const owned = materials[name] || 0;
+      return `
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <img src="${icon}" width="30" height="30" alt="${name}" />
+        <span class="god-name">${name}：${owned}/${count}</span>
+      </div>
+    `;
+    })
+    .join("");
+
+  document.getElementById("divineEquipCard").innerHTML =
+    generateEquipCardHTML(equip);
+  document.getElementById("divineMaterialReqs").innerHTML = listHtml;
+
+  const modal = new bootstrap.Modal(document.getElementById("divineModal"));
+  modal.show();
+
+  document.getElementById("confirmDivineBtn").onclick = async () => {
+    const allEnough = Object.entries(reqs).every(
+      ([name, need]) => (materials[name] || 0) >= need
+    );
+    if (!allEnough) return showAlert("材料不足，無法神化");
+
+    // 對照表：原始名稱 → 神裝名稱
+    const convertMap = {
+      普通釣竿: "天神釣竿",
+      蚯蚓: "天神餌",
+      漁夫帽: "天神盔",
+      防風外套: "天神鎧",
+      長靴: "天神靴",
+      魔劍釣竿: "天神釣竿",
+      魔法小蝦: "天神餌",
+      魔法帽: "天神盔",
+      魔法長袍: "天神鎧",
+      魔法長靴: "天神靴",
+      金屬釣竿: "天神釣竿",
+      金屬餌: "天神餌",
+      金屬頭盔: "天神盔",
+      金屬盔甲: "天神鎧",
+      金屬鞋: "天神靴",
+      黃金釣竿: "天神釣竿",
+      黃金: "天神餌",
+      黃金帽: "天神盔",
+      黃金外套: "天神鎧",
+      黃金拖鞋: "天神靴",
+    };
+
+    const newName = convertMap[equip.name];
+    if (!newName) return showAlert("此裝備無法神化");
+
+    // 讀取 item.json 裡面的神裝資料
+    const res = await fetch("item.json");
+    const itemList = await res.json();
+    const divineTemplate = itemList.find((i) => i.name === newName);
+
+    if (!divineTemplate) return showAlert(`找不到神化裝備資料：${newName}`);
+
+    // 扣材料
+    for (const [name, need] of Object.entries(reqs)) {
+      materials[name] -= need;
+    }
+    saveDivineMaterials(materials);
+
+    // 建立新裝備：用神裝模板，但保留 refineLevel 和 buffs
+    const newEquip = {
+      ...divineTemplate,
+      id: crypto.randomUUID(),
+      refineLevel: equip.refineLevel ?? 0,
+      buffs: equip.buffs,
+      isFavorite: equip.isFavorite ?? false,
+    };
+
+    // 替換裝備
+    let owned = loadOwnedEquipments();
+    owned = owned.filter((e) => e.id !== equip.id);
+    owned.push(newEquip);
+    saveOwnedEquipments(owned);
+
+    updateOwnedEquipListUI();
+    updateCharacterStats?.();
+    updateDivineUI?.();
+
+    showAlert(`✨ 神化成功！你獲得了【${newName}】`);
+    modal.hide();
+  };
 }
 
 // 下面是 document
