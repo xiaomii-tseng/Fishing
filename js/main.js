@@ -7,6 +7,7 @@ const EQUIPPED_KEY = "equipped-items-v2";
 const FISH_DEX_KEY = "fish-dex-v2";
 const LEVEL_KEY = "fishing-player-level-v1";
 const EXP_KEY = "fishing-player-exp-v1";
+const CRYSTAL_KEY = "refine-crystal";
 let backpack = loadBackpack();
 let money = loadMoney();
 let autoFishingInterval = null;
@@ -17,8 +18,8 @@ let isAutoMode = true;
 let isMultiSelectMode = false;
 let currentSort = "asc";
 let currentMapKey = "map1"; // 預設地圖
-const chestCost = 30000; // 高級寶箱
-const CHEST_COST = 3000; // 普通寶箱
+const chestCost = 20000; // 高級寶箱
+const CHEST_COST = 2000; // 普通寶箱
 const ticket1Price = 35000;
 const ticket2Price = 150000;
 const ticket3Price = 600000;
@@ -28,6 +29,13 @@ let allFishTypes = [];
 let currentBgm = null;
 let isMuted = false;
 let userHasInteractedWithBgm = false;
+const buffLabelMap = {
+  increaseCatchRate: "增加上鉤率",
+  increaseRareRate: "增加稀有率",
+  increaseBigFishChance: "大體型機率",
+  increaseSellValue: "增加販售金額",
+  increaseExpGain: "經驗值加成",
+};
 
 import {
   getAuth,
@@ -979,6 +987,7 @@ document.querySelector(".shop-chest").addEventListener("click", () => {
         rarity: rarity.key,
         buffs: buffs,
         isFavorite: false,
+        refineLevel: 0,
       };
 
       saveToOwnedEquipment(newEquip);
@@ -1045,12 +1054,10 @@ function showEquipmentGetModal(equip) {
   card.innerHTML = `
     <div class="equipment-top">
       <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
-      <div class="equipment-name">${equip.name}</div>
+      <div class="equipment-name">${getEquipDisplayName(equip)}</div>
     </div>
     <ul class="equipment-buffs">
-      ${equip.buffs
-        .map((buff) => `<li>${buff.label} +${buff.value}%</li>`)
-        .join("")}
+      ${equip.buffs.map((b) => `<li>${getBuffDisplay(b)}</li>`).join("")}
     </ul>
   `;
 
@@ -1093,9 +1100,11 @@ function updateOwnedEquipListUI() {
       <div class="equipment-top d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
           <img src="${equip.image}" alt="裝備圖示" class="equipment-icon" />
-          <div class="equipment-name">${equip.name}</div>
+          <div class="equipment-name">${getEquipDisplayName(equip)}</div>
         </div>
-        <button class="btn btn-sm btn-favorite" data-id="${equip.id}">${isFav}</button>
+        <button class="btn btn-sm btn-favorite" data-id="${
+          equip.id
+        }">${isFav}</button>
       </div>
       <ul class="equipment-buffs mt-2">
         ${buffList}
@@ -1137,7 +1146,10 @@ function openEquipActionModal(selectedEquip) {
   const modal = new bootstrap.Modal(
     document.getElementById("equipActionModal")
   );
-
+  document.getElementById("refineBtn").onclick = () => {
+    modal.hide();
+    openRefineChoiceModal(selectedEquip);
+  };
   const selectedCardHTML = generateEquipCardHTML(selectedEquip);
   document.getElementById("equipActionCard").innerHTML = selectedCardHTML;
 
@@ -1161,6 +1173,8 @@ function openEquipActionModal(selectedEquip) {
 
   modal.show();
 }
+
+// 顯示裝備能力
 function generateEquipCardHTML(equip) {
   const isFav = equip.isFavorite ? "❤️" : "🤍";
 
@@ -1169,14 +1183,14 @@ function generateEquipCardHTML(equip) {
       <div class="equipment-top d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <img src="${equip.image}" class="equipment-icon" />
-          <div class="equipment-name">${equip.name}</div>
+          <div class="equipment-name">${getEquipDisplayName(equip)}</div>
         </div>
         <button class="btn btn-sm btn-favorite" data-id="${equip.id}">
           ${isFav}
         </button>
       </div>
       <ul class="equipment-buffs mt-2">
-        ${equip.buffs.map((b) => `<li>${b.label} +${b.value}%</li>`).join("")}
+        ${equip.buffs.map((b) => `<li>${getBuffDisplay(b)}</li>`).join("")}
       </ul>
     </div>
   `;
@@ -1292,7 +1306,7 @@ document.querySelectorAll(".slot").forEach((slotDiv) => {
               <img src="${item.image}" class="equipment-icon" alt="${
         item.name
       }" />
-              <div class="equipment-name">${item.name}</div>
+              <div class="equipment-name">${getEquipDisplayName(item)}</div>
             </div>
             <div class="equipment-fav">${isFav}</div>
           </div>
@@ -1494,6 +1508,7 @@ document.querySelector(".chest2").addEventListener("click", () => {
         rarity: rarity.key,
         buffs: buffs,
         isFavorite: false,
+        refineLevel: 0,
       };
 
       saveToOwnedEquipment(newEquip);
@@ -1732,8 +1747,226 @@ function playMapMusic(musicPath) {
     });
   }
 }
+// 更新結晶
+// 更新結晶
+function updateCrystalUI() {
+  const count = parseInt(localStorage.getItem(CRYSTAL_KEY) || "0", 10);
+
+  const el = document.getElementById("crystalCount");
+  if (el) {
+    el.textContent = `${count} 顆`;
+  }
+
+  const el2 = document.getElementById("refineCrystalDisplay");
+  if (el2) {
+    el2.textContent = `提煉結晶：${count} 個`;
+  }
+}
+
+// 選擇提煉方式
+function openRefineChoiceModal(equip) {
+  const modal = new bootstrap.Modal(
+    document.getElementById("refineChoiceModal")
+  );
+  modal.show();
+
+  // 綁定兩個選項按鈕的行為
+  document.getElementById("refineForgeBtn").onclick = () => {
+    modal.hide();
+    openRefineModal(equip); // 你之前寫的鍛造 modal
+  };
+
+  document.getElementById("refineDivineBtn").onclick = () => {
+    modal.hide();
+    showAlert("神化系統尚未開放"); // 你可以先預留
+  };
+}
+// 打開鍛造
+function openRefineModal(equip) {
+  selectedEquipForAction = equip;
+  const modal = new bootstrap.Modal(
+    document.getElementById("refineEquipModal")
+  );
+  modal.show();
+
+  const refineLevel = equip.refineLevel ?? 0;
+  const cost = (refineLevel + 2) * 2;
+
+  const ownedRaw = parseInt(localStorage.getItem(CRYSTAL_KEY), 10);
+  const owned = isNaN(ownedRaw) ? 0 : ownedRaw;
+
+  const buffIncrements = [0, 4, 5, 6, 7, 8, 10, 10, 15];
+  const previewIncrease = buffIncrements[refineLevel + 1];
+
+  document.getElementById("refineEquipCard").innerHTML =
+    generateEquipCardHTML(equip);
+  document.getElementById(
+    "refineLevelInfo"
+  ).textContent = `目前等級：+${refineLevel}`;
+  if (previewIncrease !== undefined) {
+    document.getElementById(
+      "refineBuffPreview"
+    ).textContent = `效果：隨機 Buff 提升 ${previewIncrease}%`;
+    document.getElementById(
+      "refineCrystalCost"
+    ).textContent = `消耗結晶：${cost} 顆`;
+  } else {
+    document.getElementById("refineBuffPreview").textContent = `效果：-`;
+    document.getElementById("refineCrystalCost").textContent = `消耗結晶：-`;
+  }
+  document.getElementById(
+    "refineCrystalOwned"
+  ).textContent = `目前擁有：${owned} 顆`;
+  const successRates = [1.0, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2];
+  const currentRate = successRates[refineLevel] ?? 0;
+  document.getElementById(
+    "refineSuccessRate"
+  ).textContent = `成功率：${Math.round(currentRate * 100)}%`;
+  document.getElementById("confirmRefineBtn").onclick = () =>
+    refineEquipment(equip);
+}
+
+// 精煉邏輯
+function refineEquipment(equip) {
+  if (!equip || !equip.buffs || equip.buffs.length === 0) {
+    showAlert("此裝備無 buff，無法精煉！");
+    return;
+  }
+
+  const refineLevel = equip.refineLevel ?? 0;
+
+  if (refineLevel >= 8) {
+    showAlert("已達精煉上限！");
+    return;
+  }
+
+  const cost = (refineLevel + 2) * 2;
+  let crystals = parseInt(localStorage.getItem(CRYSTAL_KEY) || "0", 10);
+  if (crystals < cost) {
+    showAlert(`提煉需要 ${cost} 顆結晶，目前只有 ${crystals}`);
+    return;
+  }
+
+  // 扣結晶
+  crystals -= cost;
+  localStorage.setItem(CRYSTAL_KEY, crystals);
+
+  // 成功率表
+  const successRates = [1.0, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2];
+  const chance = successRates[refineLevel];
+  const success = Math.random() < chance;
+
+  if (success) {
+    equip.refineLevel++;
+    const index = Math.floor(Math.random() * equip.buffs.length);
+
+    // 每級增加的數值表
+    const buffIncrements = [0, 4, 5, 6, 7, 8, 10, 10, 15]; // index = refineLevel
+    const increase = buffIncrements[equip.refineLevel] ?? 5; // fallback: default +5
+
+    equip.buffs[index].value += increase;
+
+    // showAlert(
+    //   `✅ 精煉成功！${
+    //     buffLabelMap[equip.buffs[index].type]
+    //   } 增加了 ${increase}%`
+    // );
+  } else {
+    // showAlert("❌ 精煉失敗，裝備等級未提升");
+  }
+
+  // 儲存與更新
+  const owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
+  const idx = owned.findIndex((e) => e.id === equip.id);
+  if (idx !== -1) owned[idx] = equip;
+  localStorage.setItem(ownedEquipment, JSON.stringify(owned));
+
+  updateOwnedEquipListUI();
+  updateCrystalUI?.();
+  updateCharacterStats?.();
+
+  // 更新裝備卡內容
+  const card = document.getElementById("refineEquipCard");
+  if (card) {
+    card.innerHTML = generateEquipCardHTML(equip);
+
+    // ✅ 插入內容後，再選到最外層卡片本體
+    const actualCard = card.querySelector(".equipment-card");
+
+    if (actualCard) {
+      actualCard.classList.remove("forge-success", "forge-fail");
+      void actualCard.offsetWidth; // 強制重播動畫
+      actualCard.classList.add(success ? "forge-success" : "forge-fail");
+    }
+  }
+
+  // 更新精煉資訊
+  const levelInfo = document.getElementById("refineLevelInfo");
+  if (levelInfo) {
+    levelInfo.textContent = `目前等級：+${equip.refineLevel}`;
+  }
+
+  const costInfo = document.getElementById("refineCrystalCost");
+  if (costInfo) {
+    const nextCost = (equip.refineLevel + 2) * 2;
+    costInfo.textContent = `消耗結晶：${nextCost} 顆`;
+  }
+  const buffIncrements = [0, 4, 5, 6, 7, 8, 10, 10, 15];
+  const previewIncrease = buffIncrements[equip.refineLevel + 1] ?? 0;
+
+  const buffPreview = document.getElementById("refineBuffPreview");
+  if (buffPreview) {
+    if (previewIncrease !== undefined) {
+      buffPreview.textContent = `效果：隨機 Buff 提升 ${previewIncrease}%`;
+    } else {
+      buffPreview.textContent = `效果：-`;
+    }
+  }
+
+  const rateInfo = document.getElementById("refineSuccessRate");
+  if (rateInfo) {
+    const successRates = [1.0, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2];
+    const currentRate = successRates[equip.refineLevel] ?? 0;
+    rateInfo.textContent = `成功率：${Math.round(currentRate * 100)}%`;
+  }
+  updateCrystalUI();
+  const refineCrystalInfo = document.getElementById("refineCrystalOwned");
+  if (refineCrystalInfo) {
+    const current = parseInt(localStorage.getItem(CRYSTAL_KEY) || "0", 10);
+    refineCrystalInfo.textContent = `目前擁有：${current} 顆`;
+  }
+}
+
+function getBuffDisplay(buff) {
+  const label = buffLabelMap[buff.type] || buff.type;
+  return `${label} +${buff.value}%`;
+}
+
+function patchLegacyEquipments() {
+  const owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
+  let changed = false;
+
+  for (const equip of owned) {
+    if (equip.refineLevel == null) {
+      equip.refineLevel = 0;
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    localStorage.setItem(ownedEquipment, JSON.stringify(owned));
+  }
+}
+function getEquipDisplayName(equip) {
+  const level = equip.refineLevel ?? 0;
+  return level > 0 ? `${equip.name} +${level}` : equip.name;
+}
 
 // 下面是 document
+document.getElementById("refineBtn").onclick = () => {
+  openRefineChoiceModal(selectedEquip);
+};
+
 document.getElementById("bgmToggleBtn").addEventListener("click", () => {
   const icon = document.getElementById("bgmIcon");
   userHasInteractedWithBgm = true;
@@ -1809,13 +2042,29 @@ document
     if (!confirmed) return;
 
     let list = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
+
+    const nonFavorite = list.filter((e) => !e.isFavorite);
+    const gainedCrystals = nonFavorite.reduce((sum, item) => {
+      const count = (item.buffs || []).filter((b) => b.type !== "note").length;
+      return sum + count;
+    }, 0);
+
     const beforeCount = list.length;
     list = list.filter((e) => e.isFavorite);
 
-    const removed = beforeCount - list.length;
     localStorage.setItem(ownedEquipment, JSON.stringify(list));
+
+    // 更新結晶
+    const oldCrystals = parseInt(localStorage.getItem(CRYSTAL_KEY) || "0", 10);
+    localStorage.setItem(CRYSTAL_KEY, oldCrystals + gainedCrystals);
+
     updateOwnedEquipListUI();
-    showAlert(`已拆解 ${removed} 件裝備`);
+    showAlert(
+      `已拆解 ${
+        beforeCount - list.length
+      } 件裝備，獲得 ${gainedCrystals} 顆提煉結晶！`
+    );
+    updateCrystalUI?.();
   });
 
 document.getElementById("openMaps").addEventListener("click", () => {
@@ -1884,25 +2133,41 @@ document.getElementById("openEquip").addEventListener("click", () => {
 });
 document.getElementById("dismantleBtn").addEventListener("click", () => {
   if (!selectedEquipForAction) return;
+
   if (selectedEquipForAction.isFavorite) {
     showAlert("此裝備已收藏");
     return;
   }
-  // 取得目前裝備列表
+
+  // ⛏️ 計算這件裝備可獲得的提煉結晶
+  const gained = (selectedEquipForAction.buffs || []).filter(
+    (b) => b.type !== "note"
+  ).length;
+
+  // ⛏️ 更新結晶數量
+  const current = parseInt(localStorage.getItem(CRYSTAL_KEY) || "0", 10);
+  localStorage.setItem(CRYSTAL_KEY, current + gained);
+
+  // 移除裝備
   let owned = JSON.parse(localStorage.getItem(ownedEquipment) || "[]");
-  // 根據 ID 過濾掉這件裝備
   owned = owned.filter((e) => e.id !== selectedEquipForAction.id);
-  // 儲存回 localStorage
   localStorage.setItem(ownedEquipment, JSON.stringify(owned));
+
   // 更新畫面
   updateOwnedEquipListUI();
-  // 關閉 modal
+  updateCrystalUI?.();
+
+  // 關閉 Modal
   const modal = bootstrap.Modal.getInstance(
     document.getElementById("equipActionModal")
   );
   if (modal) modal.hide();
-  // 清除選擇的裝備
+
+  // 清除選擇狀態
   selectedEquipForAction = null;
+
+  showAlert(`已拆解裝備，獲得 ${gained} 顆提煉結晶！`);
+  updateCrystalUI();
 });
 document
   .getElementById("confirmMultiSellResult")
@@ -1914,7 +2179,8 @@ document
   });
 window.addEventListener("DOMContentLoaded", async () => {
   updateMoneyUI();
-
+  updateCrystalUI();
+  patchLegacyEquipments();
   // ✅ 顯示版本資訊 Modal（若沒看過）
   const seenVersion = localStorage.getItem("seen-version");
   if (seenVersion !== GAME_VERSION) {

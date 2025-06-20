@@ -182,7 +182,13 @@
                     </div>
                     <hr>
                     <!-- 擁有裝備 -->
-                    <div class="owned-equipment-title">道具欄</div>
+                    <div class="d-flex justify-content-between">
+                        <div class="owned-equipment-title">道具欄</div>
+                        <div class="d-flex">
+                            <img class="ore-img" src="./images/icons/ore1.png" alt="">
+                            <div id="refineCrystalDisplay" class="owned-refine-crystal me-2 mt-1"></div>
+                        </div>
+                    </div>
                     <div id="ownedEquipList" class="equip-grid">
                         <!-- 動態加入 -->
                     </div>
@@ -235,8 +241,48 @@
                     </div>
                     <div class="d-flex justify-content-center gap-2 mt-3">
                         <button id="equipBtn" class="single-equip-btn fnc-anm">裝備</button>
+                        <button id="refineBtn" class="single-equip-btn fnc-anm">提煉</button>
                         <button id="dismantleBtn" class="single-equip-btn fnc-anm">拆解</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔧 提煉選擇 Modal -->
+    <div class="modal fade" id="refineChoiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered single-equip-modal">
+            <div class="modal-content text-center text-light bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">選擇強化方式</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-between gap-3 p-4">
+                    <button id="refineForgeBtn" class="reff-btn reff-btn1 fnc-anm">精煉</button>
+                    <button id="refineDivineBtn" class="reff-btn reff-btn2 fnc-anm">神化</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 精煉裝備 Modal -->
+    <div class="modal fade" id="refineEquipModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered single-equip-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">裝備精煉</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center text-light">
+                    <div id="refineEquipCard" class=" m-auto mb-3">
+                        <!-- 動態插入裝備卡片 -->
+                    </div>
+                    <div class="mb-2" id="refineLevelInfo"></div>
+                    <div class="mb-2" id="refineSuccessRate"></div>
+                    <div class="mb-2" id="refineBuffPreview"></div>
+                    <div class="mb-2" id="refineCrystalCost"></div>
+                    <div class="mb-2" id="refineCrystalOwned"></div>
+                    <button id="confirmRefineBtn" class="ref-btn mt-3 fnc-anm">進行精煉</button>
                 </div>
             </div>
         </div>
@@ -257,12 +303,12 @@
                         <div>
                             <img class="shop-chest chest1 fnc-anm" src="./images/shop/chest1.png" alt="">
                             <div class="text-center">普通寶箱</div>
-                            <div class="text-center">3000 G</div>
+                            <div class="text-center">2000 G</div>
                         </div>
                         <div>
                             <img class="shop-chest chest2 fnc-anm" src="./images/shop/chest2.png" alt="">
                             <div class="text-center">高級寶箱</div>
-                            <div class="text-center">30000 G</div>
+                            <div class="text-center">20000 G</div>
                         </div>
                     </div>
                     <div class="text-center mt-4 shop-title">通行證</div>
@@ -275,15 +321,13 @@
                         </div>
                         <div class="text-center">
                             <img id="buyMap2Ticket" src="./images/shop/ticket1.png"
-                                class="ticket-icon shop-ticket fnc-anm" data-map="map2"
-                                data-price="150000" />
+                                class="ticket-icon shop-ticket fnc-anm" data-map="map2" data-price="150000" />
                             <div>機械城河</div>
                             <div>150000 G</div>
                         </div>
                         <div class="text-center">
                             <img id="buyMap3Ticket" src="./images/shop/ticket2.png"
-                                class="ticket-icon shop-ticket fnc-anm" data-map="map3"
-                                data-price="600000" />
+                                class="ticket-icon shop-ticket fnc-anm" data-map="map3" data-price="600000" />
                             <div>黃金遺址</div>
                             <div>600000 G</div>
                         </div>

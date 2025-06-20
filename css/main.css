@@ -750,3 +750,64 @@ body {
   width: 32px;
   height: 32px;
 }
+
+.ref-btn {
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 10px 15px 10px 15px;
+  border-radius: 15px;
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 5px rgb(0, 0, 0);
+  border: 2px solid #4c2c00;
+}
+
+.reff-btn {
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 10px 15px 10px 15px;
+  border-radius: 15px;
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 5px rgb(101, 101, 101);
+  border: 2px solid #4c2c00;
+  width: 50%;
+  height: 80px;
+}
+
+@keyframes forge-success {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0px gold;
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px gold;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0px gold;
+  }
+}
+
+@keyframes forge-fail {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.forge-success {
+  animation: forge-success 0.6s ease;
+}
+
+.forge-fail {
+  animation: forge-fail 0.4s ease;
+}
+
