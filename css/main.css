@@ -666,7 +666,11 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
 }
-
+.map-btn4 {
+  background-image: url("../images/maps/map4-btn.jpg"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+}
 .equipment-top {
   position: relative;
 }

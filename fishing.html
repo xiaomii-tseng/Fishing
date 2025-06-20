@@ -66,7 +66,6 @@
 
         <!-- 顯示帳號 -->
         <div id="accountDisplay" class="account-display">
-            目前帳號：清澈川流
         </div>
 
         <!-- 底部功能列 -->
@@ -263,22 +262,30 @@
                         <div>
                             <img class="shop-chest chest2 fnc-anm" src="./images/shop/chest2.png" alt="">
                             <div class="text-center">高級寶箱</div>
-                            <div class="text-center">10000 G</div>
+                            <div class="text-center">15000 G</div>
                         </div>
                     </div>
                     <div class="text-center mt-4 shop-title">通行證</div>
                     <div class="d-flex justify-content-around mt-2">
                         <div class="text-center">
-                            <img id="buyMap2Ticket" src="./images/shop/ticket1.png"
-                                class="ticket-icon shop-ticket shop-chest fnc-anm" data-map="map2" data-price="1000" />
-                            <div>機械城河通行證</div>
+                            <img id="buyMap4Ticket" src="./images/shop/ticket3.png"
+                                class="ticket-icon shop-ticket fnc-anm" data-map="map4" data-price="35000" />
+                            <div>劍與魔法村</div>
                             <div>35000 G</div>
                         </div>
                         <div class="text-center">
-                            <img id="buyMap3Ticket" src="./images/shop/ticket2.png"
-                                class="ticket-icon shop-ticket shop-chest fnc-anm" data-map="map3" data-price="3000" />
-                            <div>黃金遺址通行證</div>
+                            <img id="buyMap2Ticket" src="./images/shop/ticket1.png"
+                                class="ticket-icon shop-ticket fnc-anm" data-map="map2"
+                                data-price="150000" />
+                            <div>機械城河</div>
                             <div>150000 G</div>
+                        </div>
+                        <div class="text-center">
+                            <img id="buyMap3Ticket" src="./images/shop/ticket2.png"
+                                class="ticket-icon shop-ticket fnc-anm" data-map="map3"
+                                data-price="600000" />
+                            <div>黃金遺址</div>
+                            <div>600000 G</div>
                         </div>
                     </div>
                 </div>
@@ -312,6 +319,7 @@
                     <select id="mapFilter" class="form-select form-select2 form-select-sm w-auto">
                         <option value="all">全部地圖</option>
                         <option value="map1">清澈川流</option>
+                        <option value="map4">劍與魔法村</option>
                         <option value="map2">機械城河</option>
                         <option value="map3">黃金遺址</option>
                     </select>
@@ -372,6 +380,9 @@
                     <button class="map-btn map-btn1" onclick="switchMap('map1')" data-bs-dismiss="modal">
                         清澈川流
                     </button>
+                    <button class="map-btn map-btn4" onclick="switchMap('map4')" data-bs-dismiss="modal">
+                        劍與魔法村
+                    </button>
                     <button class="map-btn map-btn2" onclick="switchMap('map2')" data-bs-dismiss="modal">
                         機械城河
                     </button>
@@ -405,7 +416,7 @@
     <div id="bgmToggleBtn" class="bgm-btn fnc-anm">
         <img id="bgmIcon" src="images/icons/voice2.png" alt="音樂控制" />
     </div>
-    
+
     <!-- Alert Modal -->
     <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered alert-modal">

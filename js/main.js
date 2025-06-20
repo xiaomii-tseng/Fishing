@@ -21,6 +21,7 @@ const chestCost = 15000; // 高級寶箱
 const CHEST_COST = 1500; // 普通寶箱
 const ticket1Price = 35000;
 const ticket2Price = 150000;
+const ticket3Price = 600000;
 const selectedFishIds = new Set();
 let fishTypes = [];
 let allFishTypes = [];
@@ -228,15 +229,36 @@ const MAP_CONFIG = {
     background: "images/index/index3.jpg",
     music: "sound/map1.mp3",
   },
-  map2: {
-    json: "fish2.json",
+  map4: {
+    json: "fish4.json",
     baseValue: 600,
     priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.04)),
     rarePenalty: 2.0,
-    catchRateModifier: 0.9, // 稍微難釣
+    catchRateModifier: 0.9,
+    name: "劍與魔法村",
+    background: "images/maps/map4.jpg",
+    requiredLevel: 35,
+    requiredEquipNames: [
+      "魔劍釣竿",
+      "魔法小蝦",
+      "魔法帽",
+      "魔法長袍",
+      "魔法長靴",
+    ],
+    requiredTicketName: "魔法通行證",
+    disableEquip: true,
+    ticketDurationMs: 30 * 60 * 1000,
+    music: "sound/map4.mp3",
+  },
+  map2: {
+    json: "fish2.json",
+    baseValue: 3000,
+    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.08)),
+    rarePenalty: 3.0,
+    catchRateModifier: 0.8, // 稍微難釣
     name: "機械城河",
     background: "images/maps/map2.jpg",
-    requiredLevel: 35,
+    requiredLevel: 70,
     requiredEquipNames: [
       "金屬釣竿",
       "金屬餌",
@@ -251,13 +273,13 @@ const MAP_CONFIG = {
   },
   map3: {
     json: "fish3.json",
-    baseValue: 3000,
-    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.1)),
-    rarePenalty: 3.0,
-    catchRateModifier: 0.75, // 較難上鉤
+    baseValue: 12000,
+    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.12)),
+    rarePenalty: 4.0,
+    catchRateModifier: 0.7, // 較難上鉤
     name: "黃金遺址",
     background: "images/maps/map3.jpg",
-    requiredLevel: 70,
+    requiredLevel: 105,
     requiredEquipNames: ["黃金釣竿", "黃金", "黃金帽", "黃金外套", "黃金拖鞋"],
     requiredTicketName: "黃金通行證",
     disableEquip: true,
@@ -1647,16 +1669,31 @@ function customConfirm(message) {
 function addTicketToInventory(ticketType) {
   const owned = JSON.parse(localStorage.getItem("owned-equipment-v2") || "[]");
 
-  // 判斷名稱與描述
-  const isMap2 = ticketType === "ticket-map2";
-  const name = isMap2 ? "機械通行證" : "黃金通行證";
-  const buffLabel = isMap2 ? "機械城河通關所需證明" : "黃金遺址通關所需證明";
-  const image = isMap2 ? "images/shop/ticket1.png" : "images/shop/ticket2.png";
+  let name = "";
+  let buffLabel = "";
+  let image = "";
+
+  if (ticketType === "ticket-map2") {
+    name = "機械通行證";
+    buffLabel = "機械城河通關所需證明";
+    image = "images/shop/ticket1.png";
+  } else if (ticketType === "ticket-map3") {
+    name = "黃金通行證";
+    buffLabel = "黃金遺址通關所需證明";
+    image = "images/shop/ticket2.png";
+  } else if (ticketType === "ticket-map4") {
+    name = "魔法通行證";
+    buffLabel = "劍與魔法村通關所需證明";
+    image = "images/shop/ticket3.png"; // ⬅ 你自己準備好圖
+  } else {
+    console.warn("未知 ticketType：", ticketType);
+    return;
+  }
 
   const item = {
     id: crypto.randomUUID(),
-    name: name,
-    image: image,
+    name,
+    image,
     type: ticketType,
     rarity: "common",
     buffs: [
@@ -1674,6 +1711,7 @@ function addTicketToInventory(ticketType) {
   updateOwnedEquipListUI();
   showAlert(`獲得 ${name}！`);
 }
+
 // 音樂
 function playMapMusic(musicPath) {
   if (currentBgm) {
@@ -1711,9 +1749,23 @@ document.getElementById("bgmToggleBtn").addEventListener("click", () => {
   icon.src = isMuted ? "images/icons/voice2.png" : "images/icons/voice.png";
 });
 
+// 加入劍與魔法村入場券
+document.getElementById("buyMap4Ticket").addEventListener("click", () => {
+  const price = ticket1Price;
+  const currentMoney = parseInt(
+    localStorage.getItem("fishing-money") || "0",
+    10
+  );
+
+  if (currentMoney < price) return showAlert("金錢不足！");
+  localStorage.setItem("fishing-money", currentMoney - price);
+  updateMoneyUI();
+  addTicketToInventory("ticket-map4");
+});
+
 // 加入機械城河入場券
 document.getElementById("buyMap2Ticket").addEventListener("click", () => {
-  const price = ticket1Price;
+  const price = ticket2Price;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
@@ -1730,7 +1782,7 @@ document.getElementById("buyMap2Ticket").addEventListener("click", () => {
 
 // 加入黃金遺址入場券
 document.getElementById("buyMap3Ticket").addEventListener("click", () => {
-  const price = ticket2Price;
+  const price = ticket3Price;
   const currentMoney = parseInt(
     localStorage.getItem("fishing-money") || "0",
     10
