@@ -17,8 +17,8 @@ let isAutoMode = true;
 let isMultiSelectMode = false;
 let currentSort = "asc";
 let currentMapKey = "map1"; // 預設地圖
-const chestCost = 15000; // 高級寶箱
-const CHEST_COST = 1500; // 普通寶箱
+const chestCost = 30000; // 高級寶箱
+const CHEST_COST = 3000; // 普通寶箱
 const ticket1Price = 35000;
 const ticket2Price = 150000;
 const ticket3Price = 600000;
@@ -27,6 +27,7 @@ let fishTypes = [];
 let allFishTypes = [];
 let currentBgm = null;
 let isMuted = false;
+let userHasInteractedWithBgm = false;
 
 import {
   getAuth,
@@ -248,7 +249,7 @@ const MAP_CONFIG = {
     requiredTicketName: "魔法通行證",
     disableEquip: true,
     ticketDurationMs: 30 * 60 * 1000,
-    music: "sound/map4.mp3",
+    music: "sound/map1.mp3",
   },
   map2: {
     json: "fish2.json",
@@ -1723,15 +1724,19 @@ function playMapMusic(musicPath) {
   currentBgm.loop = true;
   currentBgm.volume = 0.5;
   currentBgm.muted = isMuted;
-  currentBgm.play().catch((e) => {
-    console.warn("音樂播放失敗：", e);
-  });
+
+  // ⛔ 只有使用者手動開啟過音樂才播放
+  if (userHasInteractedWithBgm) {
+    currentBgm.play().catch((e) => {
+      console.warn("音樂播放失敗：", e);
+    });
+  }
 }
 
 // 下面是 document
 document.getElementById("bgmToggleBtn").addEventListener("click", () => {
   const icon = document.getElementById("bgmIcon");
-
+  userHasInteractedWithBgm = true;
   // 如果還沒建立音樂 → 表示是第一次播放
   if (!currentBgm && currentMapConfig?.music) {
     isMuted = false; // 撥第一首時預設不靜音

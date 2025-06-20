@@ -9,7 +9,7 @@
         "name": "魔劍釣竿",
         "probability": 5,
         "image": "images/equip/rod4.png",
-        "type": "shoes"
+        "type": "rod"
     },
     {
         "name": "金屬釣竿",
@@ -57,7 +57,7 @@
         "name": "魔法帽",
         "probability": 5,
         "image": "images/equip/hat4.png",
-        "type": "shoes"
+        "type": "hat"
     },
     {
         "name": "金屬頭盔",
@@ -81,7 +81,7 @@
         "name": "魔法長袍",
         "probability": 5,
         "image": "images/equip/outfit4.png",
-        "type": "shoes"
+        "type": "outfit"
     },
     {
         "name": "金屬盔甲",
