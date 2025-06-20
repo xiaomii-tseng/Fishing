@@ -8,6 +8,7 @@ const FISH_DEX_KEY = "fish-dex-v2";
 const LEVEL_KEY = "fishing-player-level-v1";
 const EXP_KEY = "fishing-player-exp-v1";
 const CRYSTAL_KEY = "refine-crystal";
+const DIVINE_STORAGE_KEY = "divine-materials";
 let backpack = loadBackpack();
 let money = loadMoney();
 let autoFishingInterval = null;
@@ -160,6 +161,13 @@ function saveToCloud() {
       exp: parseInt(localStorage.getItem("fishing-player-exp-v1") || "0", 10),
       money: parseInt(localStorage.getItem("fishing-money") || "0", 10),
       name: username, // ✅ 存帳號名稱
+      refineCrystal: parseInt(
+        localStorage.getItem("refine-crystal") || "0",
+        10
+      ),
+      divineMaterials: JSON.parse(
+        localStorage.getItem("divine-materials") || "{}"
+      ),
     };
 
     try {
@@ -881,8 +889,44 @@ function addFishToBackpack(fishType) {
   updateBackpackUI();
   logCatchCard(fishObj, fishType);
   addExp(fishObj.finalPrice);
+  maybeDropDivineItem();
 }
+// 神話道具存本地
+function loadDivineMaterials() {
+  return JSON.parse(localStorage.getItem(DIVINE_STORAGE_KEY) || "{}");
+}
+function saveDivineMaterials(materials) {
+  localStorage.setItem(DIVINE_STORAGE_KEY, JSON.stringify(materials));
+}
+// 神話道具
+function maybeDropDivineItem() {
+  const dropTable = {
+    map1: { name: "隕石碎片", chance: 0.0001 },
+    map4: { name: "黃銅礦", chance: 0.0001 },
+    map2: { name: "核廢料", chance: 0.0001 },
+  };
 
+  const drop = dropTable[currentMapKey];
+  if (!drop || Math.random() >= drop.chance) return;
+
+  const materials = loadDivineMaterials();
+  materials[drop.name] = (materials[drop.name] || 0) + 1;
+  saveDivineMaterials(materials);
+
+  showAlert(`你撿到了一個 ${drop.name}！`);
+  updateDivineUI?.(); // 若有 UI 更新函數就呼叫
+}
+function updateDivineUI() {
+  const materials = loadDivineMaterials();
+  const container = document.getElementById("divineItemList");
+  if (!container) return;
+
+  const items = Object.entries(materials)
+    .map(([name, count]) => `<div>${name} x ${count}</div>`)
+    .join("");
+
+  container.innerHTML = items || "(目前尚未收集)";
+}
 // 💾 LocalStorage 儲存 & 載入
 function saveBackpack() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(backpack));
