@@ -329,7 +329,6 @@ async function switchMap(mapKey) {
     localStorage.getItem("equipped-items-v2") || "{}"
   );
   const equippedNames = Object.values(equipped).map((e) => e?.name || "");
-  // 允許穿滿天神裝備就免檢查
   const requiredParts = ["rod", "bait", "hat", "shoes", "outfit"];
   const isFullDivineSet = requiredParts.every((part) =>
     equipped[part]?.name?.startsWith("天神")
@@ -344,6 +343,7 @@ async function switchMap(mapKey) {
     }
   }
 
+  // 通行證時間檢查
   if (config.ticketDurationMs) {
     const entryTime = parseInt(
       localStorage.getItem(`map-entry-${mapKey}`) || "0",
@@ -373,7 +373,7 @@ async function switchMap(mapKey) {
     }
 
     const confirm = await customConfirm(
-      `即將消耗【${config.requiredTicketName}】，是否繼續？，提醒:此地圖無法更換裝備`
+      `即將消耗【${config.requiredTicketName}】，是否繼續？提醒: 此地圖無法更換裝備`
     );
     if (!confirm) return;
 
@@ -383,36 +383,19 @@ async function switchMap(mapKey) {
     localStorage.setItem(`map-entry-${mapKey}`, Date.now().toString());
   }
 
-  // ✅ 中止上一張地圖的自動釣魚
+  // ✅ 清除舊地圖釣魚循環
   stopAutoFishing();
+  clearTimeout(manualFishingTimeout);
 
-  // ✅ 進入地圖
-  currentMapKey = mapKey;
-  currentMapConfig = config;
-  localStorage.setItem("disable-equip", config.disableEquip ? "1" : "0");
+  // ✅ 切換地圖
+  proceedToMap(config, mapKey);
 
-  const response = await fetch(config.json);
-  const data = await response.json();
-  fishTypes = assignPriceByProbability(
-    normalizeFishProbabilities(data),
-    config
-  );
-  updateBackground(config.background);
-  document.getElementById(
-    "currentMapDisplay"
-  ).textContent = `目前地圖：${config.name}`;
-  updateBackpackUI?.();
-  // 清除原本音樂（不自動播放）
-  if (currentBgm) {
-    currentBgm.pause();
-    currentBgm = null;
-    playMapMusic(config.music);
-  }
-  stopAutoFishing(); // 避免殘留計時器
-  if (config.autoFishingAllowed) {
+  // ✅ 僅在玩家選擇自動模式時啟動
+  if (config.autoFishingAllowed && isAutoMode) {
     startAutoFishing();
   }
 }
+
 
 window.switchMap = switchMap;
 function updateBackground(imagePath) {
@@ -817,31 +800,22 @@ function doFishing() {
 }
 // ⏳ 自動釣魚主迴圈
 function startAutoFishing() {
-  if (autoFishingIntervalId !== null) return;
-
+  if (autoFishingTimeoutId !== null) return; // 防止重複啟動
   isAutoFishing = true;
-
-  function autoFish() {
-    if (!isAutoFishing) return;
-
-    triggerAutoFishing();
-    const delay = 17000 + Math.random() * 6000;
-    autoFishingIntervalId = setTimeout(autoFish, delay);
-  }
-
-  // ✅ 延遲第一次觸發，避免切地圖馬上釣
-  const initialDelay = 17000 + Math.random() * 6000;
-  autoFishingIntervalId = setTimeout(autoFish, initialDelay);
+  const scheduleNext = () => {
+    if (!isAutoFishing || !currentMapConfig) return;
+    doFishing(false); // 執行一次釣魚
+    autoFishingTimeoutId = setTimeout(
+      scheduleNext,
+      getRandomAutoFishingDelay()
+    );
+  };
+  // 初始延遲觸發第一次釣魚
+  autoFishingTimeoutId = setTimeout(scheduleNext, getRandomAutoFishingDelay());
 }
 
 function stopAutoFishing() {
   isAutoFishing = false;
-
-  if (autoFishingIntervalId !== null) {
-    clearTimeout(autoFishingIntervalId);
-    autoFishingIntervalId = null;
-  }
-
   if (autoFishingTimeoutId !== null) {
     clearTimeout(autoFishingTimeoutId);
     autoFishingTimeoutId = null;
