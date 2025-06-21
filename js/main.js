@@ -253,7 +253,7 @@ const MAP_CONFIG = {
     json: "fish4.json",
     baseValue: 200,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
-    rarePenalty: 2.0,
+    rarePenalty: 1.1,
     catchRateModifier: 0.9,
     name: "劍與魔法村",
     background: "images/maps/map4.jpg",
@@ -275,7 +275,7 @@ const MAP_CONFIG = {
     json: "fish2.json",
     baseValue: 400,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
-    rarePenalty: 3.0,
+    rarePenalty: 1.2,
     catchRateModifier: 0.8, // 稍微難釣
     name: "機械城河",
     background: "images/maps/map2.jpg",
@@ -297,7 +297,7 @@ const MAP_CONFIG = {
     json: "fish3.json",
     baseValue: 800,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
-    rarePenalty: 4.0,
+    rarePenalty: 1.3,
     catchRateModifier: 0.7, // 較難上鉤
     name: "黃金遺址",
     background: "images/maps/map3.jpg",
@@ -395,7 +395,6 @@ async function switchMap(mapKey) {
     startAutoFishing();
   }
 }
-
 
 window.switchMap = switchMap;
 function updateBackground(imagePath) {
@@ -505,11 +504,11 @@ function generateUUID() {
 }
 // 魚的卡片邊框
 function getRarityClass(probability) {
-  if (probability > 5) return "rarity-common"; // 普通：白色
-  if (probability > 0.5) return "rarity-uncommon"; // 高級：藍色
-  if (probability > 0.2) return "rarity-rare"; // 稀有：黃色
-  if (probability > 0.1) return "rarity-epic"; // 史詩：紫色
-  if (probability > 0.05) return "rarity-legend"; // 神話：紅色
+  if (probability > 2) return "rarity-common"; // 普通：白色
+  if (probability > 0.3) return "rarity-uncommon"; // 高級：藍色
+  if (probability > 0.08) return "rarity-rare"; // 稀有：黃色
+  if (probability > 0.04) return "rarity-epic"; // 史詩：紫色
+  if (probability > 0.01) return "rarity-legend"; // 神話：紅色
   return "rarity-mythic"; // 傳奇：彩色邊框
 }
 // 🎯 精度條控制
@@ -779,23 +778,22 @@ function addClickBounce(el) {
   );
 }
 function getRandomAutoFishingDelay() {
-  return 17000 + Math.random() * 6000;
-}
-function triggerAutoFishing() {
-  const waitTime = getRandomAutoFishingDelay();
-  autoFishingTimeoutId = setTimeout(() => {
-    if (isAutoFishing && currentMapConfig) {
-      doFishing(false);
-      triggerAutoFishing();
-    }
-  }, waitTime);
+  // return 15000 + Math.random() * 5000;
+  return 4500;
 }
 function doFishing() {
-  const fishType = getRandomFish();
-  if (fishType) {
-    addFishToBackpack(fishType);
+  // 自動釣魚固定機率（例如 50% 成功）
+  const successRate = 0.75;
+
+  if (Math.random() < successRate) {
+    const fishType = getRandomFish();
+    if (fishType) {
+      addFishToBackpack(fishType);
+    } else {
+      logCatch("沒釣到魚.");
+    }
   } else {
-    logCatch("沒釣到魚.");
+    logCatch("魚跑掉了...");
   }
 }
 // ⏳ 自動釣魚主迴圈
