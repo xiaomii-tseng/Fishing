@@ -19,11 +19,11 @@ let isAutoMode = true;
 let isMultiSelectMode = false;
 let currentSort = "asc";
 let currentMapKey = "map1"; // 預設地圖
-const chestCost = 20000; // 高級寶箱
-const CHEST_COST = 2000; // 普通寶箱
-const ticket1Price = 35000;
-const ticket2Price = 150000;
-const ticket3Price = 600000;
+const chestCost = 6000; // 高級寶箱
+const CHEST_COST = 1200; // 普通寶箱
+const ticket1Price = 15000;
+const ticket2Price = 30000;
+const ticket3Price = 60000;
 const selectedFishIds = new Set();
 let fishTypes = [];
 let allFishTypes = [];
@@ -240,7 +240,7 @@ async function loadAllFishTypes() {
 const MAP_CONFIG = {
   map1: {
     json: "fish.json",
-    baseValue: 120,
+    baseValue: 100,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 1.0,
     catchRateModifier: 1.0, // 正常上鉤率
@@ -251,7 +251,7 @@ const MAP_CONFIG = {
   },
   map4: {
     json: "fish4.json",
-    baseValue: 600,
+    baseValue: 200,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 2.0,
     catchRateModifier: 0.9,
@@ -273,7 +273,7 @@ const MAP_CONFIG = {
   },
   map2: {
     json: "fish2.json",
-    baseValue: 3000,
+    baseValue: 400,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 3.0,
     catchRateModifier: 0.8, // 稍微難釣
@@ -295,7 +295,7 @@ const MAP_CONFIG = {
   },
   map3: {
     json: "fish3.json",
-    baseValue: 12000,
+    baseValue: 800,
     priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 4.0,
     catchRateModifier: 0.7, // 較難上鉤
@@ -1039,9 +1039,9 @@ const RARITY_TABLE = [
 ];
 
 const RARITY_PROBABILITIES = [
-  { rarity: "普通", chance: 94 },
-  { rarity: "高級", chance: 5.5 },
-  { rarity: "稀有", chance: 0.5 },
+  { rarity: "普通", chance: 83.5 },
+  { rarity: "高級", chance: 15 },
+  { rarity: "稀有", chance: 1.5 },
 ];
 
 document.querySelector(".shop-chest").addEventListener("click", () => {
@@ -1540,9 +1540,9 @@ function updateFishDex(fish) {
 
 // 新增高級寶箱
 const HIGH_TIER_RARITY_PROBABILITIES = [
-  { rarity: "普通", chance: 94 },
-  { rarity: "高級", chance: 5.5 },
-  { rarity: "稀有", chance: 0.5 },
+  { rarity: "普通", chance: 83.5 },
+  { rarity: "高級", chance: 15 },
+  { rarity: "稀有", chance: 1.5 },
 ];
 function generateHighTierBuffs(count) {
   const shuffled = [...BUFF_TYPES].sort(() => Math.random() - 0.5);
@@ -1629,7 +1629,7 @@ function saveExp(exp) {
   localStorage.setItem(EXP_KEY, exp.toString());
 }
 function getExpForLevel(level) {
-  return Math.floor(10000 * Math.pow(1.05, level - 1));
+  return Math.floor(1300 * Math.pow(1.06, level - 1));
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
@@ -2057,9 +2057,9 @@ function openDivineModal(equip) {
   selectedEquipForAction = equip;
 
   const reqs = {
-    隕石碎片: { count: 3, icon: "images/icons/ore2.png" },
-    黃銅礦: { count: 3, icon: "images/icons/ore3.png" },
-    核廢料: { count: 3, icon: "images/icons/ore4.png" },
+    隕石碎片: { count: 1, icon: "images/icons/ore2.png" },
+    黃銅礦: { count: 1, icon: "images/icons/ore3.png" },
+    核廢料: { count: 1, icon: "images/icons/ore4.png" },
   };
 
   // ✅ 用即時資料顯示 UI
