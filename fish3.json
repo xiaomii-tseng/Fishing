@@ -229,13 +229,13 @@
     },
     {
         "name": "奧德賽",
-        "probability": 0.067,
+        "probability": 0.0067,
         "image": "images/fish3/fish114.png",
         "maps": "黃金遺址"
     },
     {
         "name": "西肯",
-        "probability": 0.063,
+        "probability": 0.0063,
         "image": "images/fish3/fish115.png",
         "maps": "黃金遺址"
     },
@@ -247,7 +247,7 @@
     },
     {
         "name": "冥王",
-        "probability": 0.013,
+        "probability": 0.007,
         "image": "images/fish3/fish117.png",
         "maps": "黃金遺址"
     },

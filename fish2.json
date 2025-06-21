@@ -170,7 +170,7 @@
     },
     {
         "name": "戰旗",
-        "probability": 0.027,
+        "probability": 0.0027,
         "image": "images/fish2/fish61.png",
         "maps": "機械城河"
     },
@@ -213,7 +213,7 @@
     },
     {
         "name": "古代聖魚",
-        "probability": 0.005,
+        "probability": 0.0015,
         "image": "images/fish2/fish68.png",
         "maps": "機械城河"
     },

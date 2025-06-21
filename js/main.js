@@ -32,6 +32,7 @@ let isMuted = false;
 let userHasInteractedWithBgm = false;
 let autoFishingIntervalId = null;
 let isAutoFishing = false;
+let autoFishingTimeoutId = null;
 const buffLabelMap = {
   increaseCatchRate: "增加上鉤率",
   increaseRareRate: "增加稀有率",
@@ -240,7 +241,7 @@ const MAP_CONFIG = {
   map1: {
     json: "fish.json",
     baseValue: 120,
-    priceFormula: (prob, base) => Math.floor(base * (1 / prob)),
+    priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 1.0,
     catchRateModifier: 1.0, // 正常上鉤率
     name: "清澈川流",
@@ -251,12 +252,12 @@ const MAP_CONFIG = {
   map4: {
     json: "fish4.json",
     baseValue: 600,
-    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.04)),
+    priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 2.0,
     catchRateModifier: 0.9,
     name: "劍與魔法村",
     background: "images/maps/map4.jpg",
-    requiredLevel: 35,
+    requiredLevel: 40,
     requiredEquipNames: [
       "魔劍釣竿",
       "魔法小蝦",
@@ -273,12 +274,12 @@ const MAP_CONFIG = {
   map2: {
     json: "fish2.json",
     baseValue: 3000,
-    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.08)),
+    priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 3.0,
     catchRateModifier: 0.8, // 稍微難釣
     name: "機械城河",
     background: "images/maps/map2.jpg",
-    requiredLevel: 70,
+    requiredLevel: 80,
     requiredEquipNames: [
       "金屬釣竿",
       "金屬餌",
@@ -295,12 +296,12 @@ const MAP_CONFIG = {
   map3: {
     json: "fish3.json",
     baseValue: 12000,
-    priceFormula: (prob, base) => Math.floor(base * Math.pow(1 / prob, 1.12)),
+    priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
     rarePenalty: 4.0,
     catchRateModifier: 0.7, // 較難上鉤
     name: "黃金遺址",
     background: "images/maps/map3.jpg",
-    requiredLevel: 105,
+    requiredLevel: 120,
     requiredEquipNames: ["黃金釣竿", "黃金", "黃金帽", "黃金外套", "黃金拖鞋"],
     requiredTicketName: "黃金通行證",
     disableEquip: true,
@@ -329,8 +330,9 @@ async function switchMap(mapKey) {
   );
   const equippedNames = Object.values(equipped).map((e) => e?.name || "");
   // 允許穿滿天神裝備就免檢查
-  const isFullDivineSet = Object.values(equipped).every((e) =>
-    e?.name?.startsWith("天神")
+  const requiredParts = ["rod", "bait", "hat", "shoes", "outfit"];
+  const isFullDivineSet = requiredParts.every((part) =>
+    equipped[part]?.name?.startsWith("天神")
   );
 
   if (config.requiredEquipNames && !isFullDivineSet) {
@@ -380,6 +382,9 @@ async function switchMap(mapKey) {
     localStorage.setItem("owned-equipment-v2", JSON.stringify(ownedEquipments));
     localStorage.setItem(`map-entry-${mapKey}`, Date.now().toString());
   }
+
+  // ✅ 中止上一張地圖的自動釣魚
+  stopAutoFishing();
 
   // ✅ 進入地圖
   currentMapKey = mapKey;
@@ -790,13 +795,25 @@ function addClickBounce(el) {
     { once: true }
   );
 }
+function getRandomAutoFishingDelay() {
+  return 17000 + Math.random() * 6000;
+}
 function triggerAutoFishing() {
+  const waitTime = getRandomAutoFishingDelay();
+  autoFishingTimeoutId = setTimeout(() => {
+    if (isAutoFishing && currentMapConfig) {
+      doFishing(false);
+      triggerAutoFishing();
+    }
+  }, waitTime);
+}
+function doFishing() {
   const fishType = getRandomFish();
-  if (!fishType) {
-    logCatch("沒釣到魚...");
-    return;
+  if (fishType) {
+    addFishToBackpack(fishType);
+  } else {
+    logCatch("沒釣到魚.");
   }
-  addFishToBackpack(fishType);
 }
 // ⏳ 自動釣魚主迴圈
 function startAutoFishing() {
@@ -823,6 +840,11 @@ function stopAutoFishing() {
   if (autoFishingIntervalId !== null) {
     clearTimeout(autoFishingIntervalId);
     autoFishingIntervalId = null;
+  }
+
+  if (autoFishingTimeoutId !== null) {
+    clearTimeout(autoFishingTimeoutId);
+    autoFishingTimeoutId = null;
   }
 }
 
@@ -870,7 +892,7 @@ function createFishInstance(fishType) {
   const size = parseFloat((Math.random() * 100).toFixed(1));
   // 根據體型計算最終價格（最高增加35%）
   const buffs = getTotalBuffs();
-  const bigFishBonus = 1 + buffs.increaseBigFishChance / 300;
+  const bigFishBonus = 1 + buffs.increaseBigFishChance / 600;
   const adjustedSize = Math.min(size * bigFishBonus, 100); // 限制不超過100%
 
   const rawPrice = fishType.price * (1 + (adjustedSize / 100) * 0.35);
@@ -909,7 +931,6 @@ function maybeDropDivineItem() {
     map4: { name: "黃銅礦", chance: 0.0001 },
     map2: { name: "核廢料", chance: 0.0001 },
   };
-
   const drop = dropTable[currentMapKey];
   if (!drop || Math.random() >= drop.chance) return;
 
@@ -1608,7 +1629,7 @@ function saveExp(exp) {
   localStorage.setItem(EXP_KEY, exp.toString());
 }
 function getExpForLevel(level) {
-  return Math.floor(2000 * Math.pow(1.07, level - 1));
+  return Math.floor(10000 * Math.pow(1.05, level - 1));
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
@@ -1876,10 +1897,12 @@ function openRefineModal(equip) {
     ).textContent = `效果：隨機 Buff 提升 ${previewIncrease}%`;
     document.getElementById(
       "refineCrystalCost"
-    ).textContent = `消耗結晶：${cost} 顆`;
+    ).textContent = `消耗提煉結晶：${cost} 顆`;
   } else {
     document.getElementById("refineBuffPreview").textContent = `效果：-`;
-    document.getElementById("refineCrystalCost").textContent = `消耗結晶：-`;
+    document.getElementById(
+      "refineCrystalCost"
+    ).textContent = `消耗提煉結晶：-`;
   }
   document.getElementById(
     "refineCrystalOwned"
@@ -1910,7 +1933,7 @@ function refineEquipment(equip) {
   const cost = (refineLevel + 2) * 2;
   let crystals = parseInt(localStorage.getItem(CRYSTAL_KEY) || "0", 10);
   if (crystals < cost) {
-    showAlert(`提煉需要 ${cost} 顆結晶，目前只有 ${crystals}`);
+    showAlert(`提煉需要 ${cost} 顆提煉結晶，目前只有 ${crystals}`);
     return;
   }
 
@@ -1976,7 +1999,7 @@ function refineEquipment(equip) {
   const costInfo = document.getElementById("refineCrystalCost");
   if (costInfo) {
     const nextCost = (equip.refineLevel + 2) * 2;
-    costInfo.textContent = `消耗結晶：${nextCost} 顆`;
+    costInfo.textContent = `消耗提煉結晶：${nextCost} 顆`;
   }
   const buffIncrements = [0, 4, 5, 6, 7, 8, 10, 10, 15];
   const previewIncrease = buffIncrements[equip.refineLevel + 1] ?? 0;
@@ -2131,6 +2154,10 @@ function openDivineModal(equip) {
 }
 
 // 下面是 document
+document.getElementById("openTutorial").addEventListener("click", () => {
+  const modal = new bootstrap.Modal(document.getElementById("tutorialModal"));
+  modal.show();
+});
 document.getElementById("refineBtn").onclick = () => {
   openRefineChoiceModal(selectedEquip);
 };
