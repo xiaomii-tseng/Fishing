@@ -1628,9 +1628,9 @@ function saveExp(exp) {
 }
 function getExpForLevel(level) {
   const growth = Math.pow(1.05, level - 1);
-  if (level <= 40) return Math.floor(2600 * growth);
-  if (level <= 80) return Math.floor(2300 * growth);
-  return Math.floor(2000 * growth);
+  if (level <= 40) return Math.floor(1400 * growth);
+  if (level <= 80) return Math.floor(1800 * growth);
+  return Math.floor(800 * growth);
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
