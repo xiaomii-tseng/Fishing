@@ -20,9 +20,9 @@ let currentSort = "asc";
 let currentMapKey = "map1"; // 預設地圖
 const chestCost = 12000; // 高級寶箱
 const CHEST_COST = 1500; // 普通寶箱
-const ticket1Price = 70000;
-const ticket2Price = 140000;
-const ticket3Price = 350000;
+const ticket1Price = 50000;
+const ticket2Price = 80000;
+const ticket3Price = 120000;
 const selectedFishIds = new Set();
 let fishTypes = [];
 let allFishTypes = [];
@@ -301,7 +301,7 @@ const MAP_CONFIG = {
   map3: {
     json: "fish3.json",
     baseValue: 800,
-    priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob)),
+    priceFormula: (prob, base) => Math.floor(base * Math.sqrt(1 / prob) * 2),
     rarePenalty: 1.3,
     catchRateModifier: 0.7, // 較難上鉤
     name: "黃金遺址",
@@ -1627,7 +1627,10 @@ function saveExp(exp) {
   localStorage.setItem(EXP_KEY, exp.toString());
 }
 function getExpForLevel(level) {
-  return Math.floor(558 * Math.pow(1.07, level - 1));
+  const growth = Math.pow(1.05, level - 1);
+  if (level <= 40) return Math.floor(2600 * growth);
+  if (level <= 80) return Math.floor(2300 * growth);
+  return Math.floor(2000 * growth);
 }
 // 加經驗並檢查升等
 addExp(rawTotal);
