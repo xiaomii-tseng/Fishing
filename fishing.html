@@ -49,13 +49,17 @@
                 <span id="coinCount">0</span>
             </div>
         </div>
-        <!-- 模式切換按鈕 -->
-        <div class="mode-toggle">
-            <button id="toggleModeBtn" class="mode-btn fnc-anm">點擊切換手動模式</button>
-            <div class="version-info">版本 : 3.0.0</div>
+
+        <!-- 上鉤倒數 -->
+        <div class="hook-countdown-ui">
+            <div id="hookCountdown" class="text-light mt-2 text-center">剩餘時間：-- 秒</div>
+            <div class="d-flex justify-content-center mt-2">
+                <div class="fnc-anm">
+                    <button id="reduceCountdownBtn" class="heartbeat">點擊加速</button>
+                </div>
+            </div>
         </div>
-        <!-- 釣魚中 -->
-        <div id="fishingStatus" class="fishing-status">自動釣魚中...</div>
+
         <!-- 釣魚訊息 -->
         <div id="bottomInfo" class="bottom-info"></div>
 
@@ -91,17 +95,23 @@
             </button>
         </div>
 
-
-        <!-- 手動釣魚精度條 UI：初始隱藏在畫面中央 -->
-        <div id="precisionBarContainer" class="precision-bar-container" style="display: none;">
-            <!-- 精度條槽 -->
-            <div id="precisionTrack" class="precision-track">
-                <div id="precisionIndicator" class="precision-indicator"></div>
-            </div>
-            <!-- 停止按鈕 -->
-            <button id="precisionStopBtn" class="precision-stop-btn heartbeat">點擊停止</button>
-        </div>
     </div>
+
+    <!-- 🎣 拉霸式釣魚 UI -->
+    <div id="fishingMiniGame" class="fishing-mini-game hidden">
+        <div class="bar-wrapper">
+            <div class="progress-container-vertical">
+                <div class="progress-bar-vertical"></div>
+            </div>
+            <div class="fishing-bar">
+                <div class="target-zone"></div>
+                <div class="player-marker"></div>
+            </div>
+        </div>
+        <div class="message"></div>
+    </div>
+
+
 
     <!-- 背包 -->
     <div class="modal fade" id="backpackModal" tabindex="-1" aria-labelledby="backpackModalLabel" aria-hidden="true">

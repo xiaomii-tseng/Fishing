@@ -294,7 +294,7 @@ body {
     transform: scale(1);
   }
   30% {
-    transform: scale(1.15);
+    transform: scale(1.05);
   }
   60% {
     transform: scale(0.95);
@@ -749,7 +749,7 @@ body {
 
 .bgm-btn {
   position: fixed;
-  top: 120px;
+  top: 50px;
   right: 2px;
   border: none;
   border-radius: 50%;
@@ -820,4 +820,151 @@ body {
 
 .forge-fail {
   animation: forge-fail 0.4s ease;
+}
+
+/* ------------------------------------------------ */
+
+/* 🔻 倒數釣魚 UI 容器 */
+.hook-countdown-ui {
+  position: absolute;
+  bottom: 450px;
+  width: 100%;
+  z-index: 10;
+}
+
+/* 🔻 倒數時間文字 */
+#hookCountdown {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0);
+  pointer-events: none;
+}
+
+/* 🔻 催魚按鈕 */
+#reduceCountdownBtn {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 15px 20px 15px 20px;
+  border-radius: 15px;
+  background-color: #d4b389;
+  color: #4c2c00;
+  box-shadow: 2px 2px 5px rgb(0, 0, 0);
+  border: 2px solid #4c2c00;
+}
+
+@keyframes pulseYellow {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 193, 7, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+  }
+}
+
+.fishing-mini-game.hidden {
+  display: none;
+}
+.fishing-mini-game {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.fishing-bar {
+  position: relative;
+  width: 60px;
+  height: 300px;
+  background-image: url("../images-webp/index/backpackbg.webp"); /* 可用木紋圖或純色背景 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 4px solid #5b320d;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 2px 2px 5px black;
+}
+
+.target-zone {
+  position: absolute;
+  width: 100%;
+  background: rgb(0, 255, 0);
+  border: 2px solid rgb(35, 132, 0);
+  border-radius: 4px;
+}
+
+.player-marker {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background: #ffffff;
+  border: 1px solid #900;
+  border-radius: 2px;
+}
+
+.progress-container {
+  width: 100px;
+  height: 10px;
+  background: #eee;
+  border: 1px solid #888;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #4caf50, #8bc34a);
+  transition: width 0.1s linear;
+}
+
+.message {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+  text-align: center;
+}
+
+.bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-container-vertical {
+  width: 10px;
+  height: 300px;
+  background: #eee;
+  border: 1px solid #888;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 2px 2px 5px black;
+}
+
+.progress-bar-vertical {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to top, #4caf50, #8bc34a);
+  transition: height 0.1s linear;
+}
+
+.hidden {
+  display: none;
 }

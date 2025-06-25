@@ -13,7 +13,6 @@ let backpack = loadBackpack();
 let money = loadMoney();
 let selectedEquippedSlot = null;
 let selectedEquipForAction = null;
-let manualFishingTimeout = null;
 let isAutoMode = true;
 let isMultiSelectMode = false;
 let currentSort = "desc";
@@ -29,8 +28,6 @@ let allFishTypes = [];
 let currentBgm = null;
 let isMuted = true;
 let userHasInteractedWithBgm = false;
-let isAutoFishing = false;
-let autoFishingTimeoutId = null;
 const buffLabelMap = {
   increaseCatchRate: "增加上鉤率",
   increaseRareRate: "增加稀有率",
@@ -38,6 +35,14 @@ const buffLabelMap = {
   increaseSellValue: "增加販售金額",
   increaseExpGain: "經驗值加成",
 };
+
+// 🎣 倒數釣魚模組
+let hookCountdown = 0;
+let hookIntervalId = null;
+let reduceCooldown = false;
+// 🔧 配置
+const MIN_HOOK_TIME = 15000; // 50秒
+const MAX_HOOK_TIME = 20000; // 80秒
 
 import {
   getAuth,
@@ -388,17 +393,8 @@ async function switchMap(mapKey) {
     localStorage.setItem(`map-entry-${mapKey}`, Date.now().toString());
   }
 
-  // ✅ 清除舊地圖釣魚循環
-  stopAutoFishing();
-  clearTimeout(manualFishingTimeout);
-
   // ✅ 切換地圖
   proceedToMap(config, mapKey);
-
-  // ✅ 僅在玩家選擇自動模式時啟動
-  if (config.autoFishingAllowed && isAutoMode) {
-    startAutoFishing();
-  }
 }
 
 window.switchMap = switchMap;
@@ -517,37 +513,6 @@ function getRarityClass(rawProbability) {
   if (rawProbability > 0.01) return "rarity-legend"; // 神話：紅色
   return "rarity-mythic"; // 傳奇：彩色邊框
 }
-// 🎯 精度條控制
-let precisionInterval = null;
-let pos = 0;
-let direction = 1;
-const speed = 5;
-const intervalTime = 16;
-
-function startPrecisionBar() {
-  if (precisionInterval) return;
-  document.getElementById("precisionBarContainer").style.display = "flex";
-  const track = document.getElementById("precisionTrack");
-  const indicator = document.getElementById("precisionIndicator");
-  const trackWidth = track.clientWidth;
-  const indicatorWidth = indicator.clientWidth;
-
-  // 隨機起始位置與方向 👇
-  pos = Math.floor(Math.random() * (trackWidth - indicatorWidth));
-  direction = Math.random() < 0.5 ? 1 : -1;
-
-  precisionInterval = setInterval(() => {
-    pos += speed * direction;
-    if (pos >= trackWidth - indicatorWidth) {
-      pos = trackWidth - indicatorWidth;
-      direction = -1;
-    } else if (pos <= 0) {
-      pos = 0;
-      direction = 1;
-    }
-    indicator.style.left = pos + "px";
-  }, intervalTime);
-}
 
 // 釣魚資訊
 function logCatchCard(fishObj, fishType) {
@@ -662,57 +627,6 @@ function batchSellSelected() {
   new bootstrap.Modal(document.getElementById("multiSellResultModal")).show();
 }
 
-function logCatch(message) {
-  const bottomInfo = document.getElementById("bottomInfo");
-  if (bottomInfo) {
-    bottomInfo.textContent = message;
-    bottomInfo.classList.add("show");
-
-    // 清除先前計時器（避免多次觸發）
-    clearTimeout(bottomInfo._hideTimer);
-    bottomInfo._hideTimer = setTimeout(() => {
-      bottomInfo.classList.remove("show");
-    }, 3000);
-  }
-}
-document
-  .getElementById("precisionStopBtn")
-  .addEventListener("click", stopPrecisionBar);
-
-// 關閉指示器
-function stopPrecisionBar() {
-  if (!precisionInterval) return;
-  clearInterval(precisionInterval);
-  precisionInterval = null;
-
-  const track = document.getElementById("precisionTrack");
-  const indicator = document.getElementById("precisionIndicator");
-  const trackWidth = track.clientWidth;
-  const indicatorWidth = indicator.clientWidth;
-  const precisionRatio = pos / (trackWidth - indicatorWidth);
-
-  const buffs = getTotalBuffs();
-  const successChance =
-    Math.min(50 + precisionRatio * 25) *
-    ((buffs.increaseCatchRate * 0.3 + 100) / 100) *
-    currentMapConfig.catchRateModifier;
-  const isSuccess = Math.random() * 100 < successChance;
-
-  if (isSuccess) {
-    const fishType = getWeightedFishByPrecision(precisionRatio);
-    addFishToBackpack(fishType);
-  } else {
-    logCatch("魚跑掉了...");
-  }
-
-  document.getElementById("precisionBarContainer").style.display = "none";
-  if (!isAutoMode) {
-    manualFishingTimeout = setTimeout(() => {
-      startPrecisionBar();
-    }, 3500);
-  }
-}
-
 // 計算魚的價值
 function assignPriceByProbability(fishList, mapConfig) {
   return fishList.map((fish) => ({
@@ -753,17 +667,7 @@ if (toggleBtn) {
         ? "自動釣魚中..."
         : "機率加成中...";
     }
-    stopAutoFishing();
-    clearTimeout(manualFishingTimeout);
     hidePrecisionBar();
-
-    if (isAutoMode) {
-      startAutoFishing();
-    } else {
-      manualFishingTimeout = setTimeout(() => {
-        startPrecisionBar();
-      }, 3500);
-    }
   });
 }
 // 關閉精度條
@@ -783,75 +687,6 @@ function addClickBounce(el) {
     },
     { once: true }
   );
-}
-function getRandomAutoFishingDelay() {
-  return 8000 + Math.random() * 5000;
-  // return 4500;
-}
-function doFishing() {
-  // 自動釣魚固定機率（例如 50% 成功）
-  const successRate = 0.6;
-
-  if (Math.random() < successRate) {
-    const fishType = getRandomFish();
-    if (fishType) {
-      addFishToBackpack(fishType);
-    } else {
-      logCatch("沒釣到魚.");
-    }
-  } else {
-    logCatch("魚跑掉了...");
-  }
-}
-// ⏳ 自動釣魚主迴圈
-function startAutoFishing() {
-  if (autoFishingTimeoutId !== null) return; // 防止重複啟動
-  isAutoFishing = true;
-  const scheduleNext = () => {
-    if (!isAutoFishing || !currentMapConfig) return;
-    doFishing(false); // 執行一次釣魚
-    autoFishingTimeoutId = setTimeout(
-      scheduleNext,
-      getRandomAutoFishingDelay()
-    );
-  };
-  // 初始延遲觸發第一次釣魚
-  autoFishingTimeoutId = setTimeout(scheduleNext, getRandomAutoFishingDelay());
-}
-
-function stopAutoFishing() {
-  isAutoFishing = false;
-  if (autoFishingTimeoutId !== null) {
-    clearTimeout(autoFishingTimeoutId);
-    autoFishingTimeoutId = null;
-  }
-}
-
-// 手動釣魚增加稀有度
-function getWeightedFishByPrecision(precisionRatio) {
-  // 建立一個新的魚池，加權機率會隨 precisionRatio 提升而往稀有魚偏移
-  const weightedFish = fishTypes.map((fish) => {
-    const rarityWeight = 1 / fish.probability;
-    const buffs = getTotalBuffs();
-    const rareRateBonus = 1 + buffs.increaseRareRate / 100;
-    const bias =
-      1 +
-      (rarityWeight * precisionRatio * 0.1 * rareRateBonus) /
-        currentMapConfig.rarePenalty;
-
-    return {
-      ...fish,
-      weight: fish.probability * bias,
-    };
-  });
-
-  const total = weightedFish.reduce((sum, f) => sum + f.weight, 0);
-  const rand = Math.random() * total;
-  let sum = 0;
-  for (const f of weightedFish) {
-    sum += f.weight;
-    if (rand < sum) return f;
-  }
 }
 
 // 🎯 機率抽魚
@@ -913,7 +748,9 @@ function addFishToBackpack(fishType) {
   logCatchCard(fishObj, fishType);
   addExp(fishObj.finalPrice);
   maybeDropDivineItem();
+  return fishObj; // ✅ 加上這行
 }
+
 // 神話道具存本地
 function loadDivineMaterials() {
   return JSON.parse(localStorage.getItem(DIVINE_STORAGE_KEY) || "{}");
@@ -1482,8 +1319,8 @@ function renderFishBook() {
   const mapName = selectedMap === "all" ? null : MAP_CONFIG[selectedMap].name;
 
   // 🔍 篩出該地圖出現的所有魚種
-  const filteredFishTypes = allFishTypes.filter((fish) =>
-    !mapName || (fish.maps || []).includes(mapName)
+  const filteredFishTypes = allFishTypes.filter(
+    (fish) => !mapName || (fish.maps || []).includes(mapName)
   );
 
   // 🧮 計算該地圖中有幾種魚被發現
@@ -1492,8 +1329,9 @@ function renderFishBook() {
   ).length;
 
   // 🧾 顯示進度 (目前地圖已發現 / 地圖總魚種)
-  document.getElementById("fishBookProgress").textContent =
-    `(${filteredDiscoveredCount}/${filteredFishTypes.length})`;
+  document.getElementById(
+    "fishBookProgress"
+  ).textContent = `(${filteredDiscoveredCount}/${filteredFishTypes.length})`;
 
   for (const fishType of allFishTypes) {
     const data = dex.find((d) => d.name === fishType.name);
@@ -1518,13 +1356,14 @@ function renderFishBook() {
         <div class="fish-text">首次釣到：${new Date(
           data.firstCaught
         ).toLocaleDateString()}</div>
-        <div class="fish-text">出沒地圖：${(fishType.maps || []).join("、")}</div>
+        <div class="fish-text">出沒地圖：${(fishType.maps || []).join(
+          "、"
+        )}</div>
       </div>
     `;
     grid.appendChild(card);
   }
 }
-
 
 function loadFishDex() {
   return JSON.parse(localStorage.getItem(FISH_DEX_KEY) || "[]");
@@ -2190,6 +2029,214 @@ function openDivineModal(equip) {
   };
 }
 
+// 新釣魚邏輯
+function startHookCountdown() {
+  const buff = getTotalBuffs().increaseCatchRate || 0;
+  const buffReduceMs = Math.floor(buff * 300); // 每 1% 減少 0.3 秒
+  const baseTime = randomInt(MIN_HOOK_TIME, MAX_HOOK_TIME);
+  hookCountdown = baseTime - buffReduceMs;
+
+  updateHookUI();
+
+  hookIntervalId = setInterval(() => {
+    hookCountdown -= 1000;
+    updateHookUI();
+
+    if (hookCountdown <= 0) {
+      clearInterval(hookIntervalId);
+      hookIntervalId = null;
+      triggerFishBite();
+    }
+  }, 1000);
+}
+
+function updateHookUI() {
+  const el = document.getElementById("hookCountdown");
+  if (el) {
+    const seconds = Math.ceil(hookCountdown / 1000);
+    el.textContent = `剩餘時間：${seconds} 秒`;
+  }
+}
+
+function onClickReduceButton() {
+  if (reduceCooldown || hookCountdown <= 0) return;
+  hookCountdown -= 1000;
+  updateHookUI();
+
+  reduceCooldown = true;
+  setTimeout(() => (reduceCooldown = false), 100);
+}
+
+// 📌 初始化按鈕監聽器
+const reduceBtn = document.getElementById("reduceCountdownBtn");
+if (reduceBtn) {
+  reduceBtn.addEventListener("click", onClickReduceButton);
+}
+
+// ✅ 難度設定表（釣魚拉霸條）
+const difficultySettings = {
+  normal: { zoneSpeed: 1.0, zoneHeight: 100, decayRate: 0.005 },
+  advanced: { zoneSpeed: 1.1, zoneHeight: 85, decayRate: 0.005 },
+  rare: { zoneSpeed: 1.2, zoneHeight: 70, decayRate: 0.005 },
+  epic: { zoneSpeed: 1.3, zoneHeight: 55, decayRate: 0.005 },
+  legendary: { zoneSpeed: 1.4, zoneHeight: 40, decayRate: 0.005 },
+  mythic: { zoneSpeed: 1.5, zoneHeight: 30, decayRate: 0.005 },
+};
+
+// ✅ 根據地圖載入對應魚種資料
+async function loadFishTypesForMap(mapKey) {
+  try {
+    const res = await fetch(`maps/${mapKey}.json`);
+    const data = await res.json();
+    fishTypes = data;
+    console.log(`✅ 已載入 ${mapKey} 對應魚種，共 ${fishTypes.length} 條`);
+  } catch (err) {
+    console.error(`❌ 載入 ${mapKey}.json 失敗`, err);
+    fishTypes = [];
+  }
+}
+
+// ✅ 抽魚難度對應（由機率轉換成難度 key）
+function getBarDifficulty(prob) {
+  if (prob > 2) return "normal";
+  if (prob > 0.3) return "advanced";
+  if (prob > 0.08) return "rare";
+  if (prob > 0.04) return "epic";
+  if (prob > 0.01) return "legendary";
+  return "mythic";
+}
+
+// ✅ 手動釣魚成功後的邏輯整合
+function handleFishingSuccess(fishType) {
+  if (!fishType || typeof fishType !== "object") {
+    console.warn("❌ 無效的 fishType 傳入 handleFishingSuccess：", fishType);
+    logCatchCard(null, null);
+    return;
+  }
+
+  const fishObj = addFishToBackpack(fishType);
+  if (!fishObj) {
+    console.warn("❌ addFishToBackpack 未回傳 fishObj：", fishType);
+    logCatchCard(null, null);
+    return;
+  }
+
+  logCatchCard(fishObj, fishType);
+  addExp(fishObj.finalPrice || 0);
+  updateFishDex(fishObj);
+  startHookCountdown();
+}
+
+// ✅ 被 triggerFishBite 呼叫
+function triggerFishBite() {
+  const fishType = getRandomFish();
+  const difficulty = getBarDifficulty(fishType.probability);
+  startBarMiniGame(fishType, difficulty);
+}
+
+// ✅ 拉霸條互動邏輯
+function startBarMiniGame(fishType, difficultyKey) {
+  const gameEl = document.getElementById("fishingMiniGame");
+  const barEl = gameEl.querySelector(".fishing-bar");
+  const zoneEl = gameEl.querySelector(".target-zone");
+  const markerEl = gameEl.querySelector(".player-marker");
+  const progressBar = gameEl.querySelector(".progress-bar-vertical");
+  const messageEl = gameEl.querySelector(".message");
+
+  const difficulty = difficultySettings[difficultyKey];
+
+  gameEl.classList.remove("hidden");
+  document.querySelector(".hook-countdown-ui")?.classList.add("hidden");
+
+  // 延遲等待 DOM 正常渲染後再取高度
+  requestAnimationFrame(() => {
+    const barHeight = barEl.offsetHeight;
+    const markerHeight = markerEl.offsetHeight;
+    const zoneHeight = Math.min(difficulty.zoneHeight, barHeight);
+
+    let markerY = barHeight / 2;
+    let zoneY = Math.random() * (barHeight - zoneHeight);
+    let zoneSpeed = difficulty.zoneSpeed;
+    let progress = 30; // 預設進度條為 30%
+    let holding = false;
+    let gameActive = true;
+    let elapsed = 0;
+    const timeLimit = 10000;
+
+    zoneEl.style.height = zoneHeight + "px";
+
+    function onHold() {
+      holding = true;
+    }
+    function onRelease() {
+      holding = false;
+    }
+    barEl.addEventListener("mousedown", onHold);
+    barEl.addEventListener("mouseup", onRelease);
+    barEl.addEventListener("mouseleave", onRelease);
+    barEl.addEventListener("touchstart", onHold);
+    barEl.addEventListener("touchend", onRelease);
+
+    function cleanup() {
+      barEl.removeEventListener("mousedown", onHold);
+      barEl.removeEventListener("mouseup", onRelease);
+      barEl.removeEventListener("mouseleave", onRelease);
+      barEl.removeEventListener("touchstart", onHold);
+      barEl.removeEventListener("touchend", onRelease);
+    }
+
+    function loop(ts) {
+      if (!gameActive) return;
+      elapsed += 16;
+
+      markerY += holding ? -2 : 2;
+      markerY = Math.max(0, Math.min(barHeight - markerHeight, markerY));
+      markerEl.style.top = markerY + "px";
+
+      zoneY += zoneSpeed;
+      if (zoneY <= 0 || zoneY + zoneHeight >= barHeight) {
+        zoneSpeed *= -1;
+        zoneY = Math.max(0, Math.min(barHeight - zoneHeight, zoneY));
+      }
+      zoneEl.style.top = zoneY + "px";
+
+      const markerCenter = markerY + markerHeight / 2;
+      const inZone =
+        markerCenter >= zoneY && markerCenter <= zoneY + zoneHeight;
+      progress += inZone ? 0.4 : -difficulty.decayRate * 100;
+      progress = Math.max(0, Math.min(100, progress));
+      progressBar.style.height = progress + "%";
+
+      if (progress >= 100) {
+        gameActive = false;
+        cleanup();
+        gameEl.classList.add("hidden");
+        document
+          .querySelector(".hook-countdown-ui")
+          ?.classList.remove("hidden");
+        handleFishingSuccess(fishType);
+        return;
+      }
+      if (elapsed > timeLimit || progress <= 0) {
+        gameActive = false;
+        cleanup();
+        messageEl.textContent = "魚跑掉了...";
+        setTimeout(() => {
+          gameEl.classList.add("hidden");
+          messageEl.textContent = "";
+          document
+            .querySelector(".hook-countdown-ui")
+            ?.classList.remove("hidden");
+          startHookCountdown();
+        }, 1500);
+        return;
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  });
+}
+
 // 下面是 document
 document
   .getElementById("equipTypeFilter")
@@ -2221,7 +2268,9 @@ document.getElementById("bgmToggleBtn").addEventListener("click", () => {
     }
 
     const icon = document.getElementById("bgmIcon");
-    icon.src = isMuted ? "images-webp/icons/voice2.webp" : "images-webp/icons/voice.webp";
+    icon.src = isMuted
+      ? "images-webp/icons/voice2.webp"
+      : "images-webp/icons/voice.webp";
   }
 });
 
@@ -2417,6 +2466,7 @@ document
   });
 window.addEventListener("DOMContentLoaded", async () => {
   switchMap("map1");
+  startHookCountdown();
   updateMoneyUI();
   updateCrystalUI();
   patchLegacyEquipments();
